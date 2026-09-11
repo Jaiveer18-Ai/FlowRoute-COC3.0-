@@ -13,7 +13,6 @@ const DisruptionSection: React.FC = () => {
       ref={ref}
       style={{
         position: 'relative',
-        background: 'linear-gradient(180deg, var(--color-bg) 0%, rgba(239,68,68,0.02) 50%, var(--color-bg) 100%)',
       }}
     >
       <div className="container">

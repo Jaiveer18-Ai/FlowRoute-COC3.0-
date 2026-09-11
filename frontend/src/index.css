@@ -7,39 +7,39 @@
    ============================================================ */
 
 :root {
-  /* ---- Color Palette ---- */
-  --color-bg:            #09090b;
-  --color-bg-elevated:   #101014;
-  --color-bg-surface:    #16161c;
-  --color-bg-hover:      #1e1e26;
-  --color-border:        #23232c;
-  --color-border-subtle: rgba(255, 255, 255, 0.08);
-  --color-border-bright: rgba(255, 255, 255, 0.16);
+  /* ---- Color Palette (Premium Linear / Vercel Midnight & Electric Cyan) ---- */
+  --color-bg:            #080a10;
+  --color-bg-elevated:   #0e121e;
+  --color-bg-surface:    #151b2c;
+  --color-bg-hover:      #1f273d;
+  --color-border:        rgba(255, 255, 255, 0.09);
+  --color-border-subtle: rgba(255, 255, 255, 0.05);
+  --color-border-bright: rgba(255, 255, 255, 0.18);
 
-  --color-text-primary:   #f4f3ef;
-  --color-text-secondary: #a3a199;
-  --color-text-muted:     #63615b;
+  --color-text-primary:   #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted:     #64748b;
 
   /* Signal colors */
-  --color-accent:         #3b82f6;
-  --color-accent-bright:  #60a5fa;
+  --color-accent:         #2563eb;
+  --color-accent-bright:  #38bdf8;
   --color-accent-dim:     #1d4ed8;
-  --color-accent-glow:    rgba(59, 130, 246, 0.14);
+  --color-accent-glow:    rgba(56, 189, 248, 0.18);
 
-  --color-healthy:        #22c55e;
-  --color-healthy-dim:    #15803d;
-  --color-healthy-glow:   rgba(34, 197, 94, 0.12);
+  --color-healthy:        #10b981;
+  --color-healthy-dim:    #059669;
+  --color-healthy-glow:   rgba(16, 185, 129, 0.14);
 
   --color-warning:        #f59e0b;
-  --color-warning-dim:    #b45309;
+  --color-warning-dim:    #d97706;
 
-  --color-danger:         #ef4444;
-  --color-danger-dim:     #991b1b;
-  --color-danger-glow:    rgba(239, 68, 68, 0.12);
+  --color-danger:         #f43f5e;
+  --color-danger-dim:     #be123c;
+  --color-danger-glow:    rgba(244, 63, 94, 0.18);
 
-  --color-disrupted:      #ef4444;
+  --color-disrupted:      #f43f5e;
   --color-congested:      #f59e0b;
-  --color-optimized:      #3b82f6;
+  --color-optimized:      #38bdf8;
 
   /* ---- Typography (High-Contrast Editorial + Precision Monospace) ---- */
   --font-sans: 'Satoshi', 'Geist Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -155,6 +155,10 @@ body {
   letter-spacing: var(--tracking-normal);
   color: var(--color-text-primary);
   background-color: var(--color-bg);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(56, 189, 248, 0.07), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 50% 110%, rgba(37, 99, 235, 0.05), transparent 70%);
+  background-attachment: fixed;
   overflow-x: hidden;
   min-height: 100vh;
 }

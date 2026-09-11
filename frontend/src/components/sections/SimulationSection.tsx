@@ -50,11 +50,7 @@ const SimulationSection: React.FC<Props> = ({
       id="simulation"
       className="section"
       ref={ref}
-      style={{
-        background: 'var(--color-bg-elevated)',
-        borderTop: '1px solid var(--color-border-subtle)',
-        borderBottom: '1px solid var(--color-border-subtle)',
-      }}
+      style={{ position: 'relative' }}
     >
       <div className="container">
         {/* Section header */}

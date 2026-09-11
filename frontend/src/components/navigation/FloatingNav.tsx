@@ -104,14 +104,14 @@ const FloatingNav: React.FC = () => {
         alignItems: 'center',
         gap: '4px',
         padding: '6px 8px',
-        background: isScrolled ? 'rgba(8, 12, 22, 0.9)' : 'rgba(10, 14, 26, 0.72)',
+        background: isScrolled ? 'rgba(11, 15, 25, 0.92)' : 'rgba(13, 18, 30, 0.78)',
         backdropFilter: 'blur(24px) saturate(1.7)',
         WebkitBackdropFilter: 'blur(24px) saturate(1.7)',
-        border: '1px solid rgba(59, 130, 246, 0.28)',
+        border: '1px solid rgba(255, 255, 255, 0.12)',
         borderRadius: 'var(--radius-pill)',
         boxShadow: isScrolled
-          ? '0 16px 40px rgba(0, 0, 0, 0.7), 0 0 28px rgba(59, 130, 246, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.16)'
-          : '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 130, 246, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          ? '0 16px 40px rgba(0, 0, 0, 0.65), 0 0 24px rgba(56, 189, 248, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.14)'
+          : '0 10px 30px rgba(0, 0, 0, 0.45), 0 0 16px rgba(56, 189, 248, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
         transition: 'all 0.3s ease',
         maxWidth: 'calc(100vw - 32px)',
       }}
@@ -132,8 +132,8 @@ const FloatingNav: React.FC = () => {
               fontWeight: isActive ? 600 : 500,
               letterSpacing: '0.09em',
               textTransform: 'uppercase',
-              color: isActive ? '#ffffff' : 'rgba(203, 213, 225, 0.72)',
-              textShadow: isActive ? '0 0 12px rgba(96, 165, 250, 0.5)' : 'none',
+              color: isActive ? '#ffffff' : 'rgba(226, 232, 240, 0.75)',
+              textShadow: isActive ? '0 0 10px rgba(56, 189, 248, 0.5)' : 'none',
               background: 'none',
               border: 'none',
               transition: 'color 0.2s ease, text-shadow 0.2s ease',
@@ -149,9 +149,9 @@ const FloatingNav: React.FC = () => {
                   position: 'absolute',
                   inset: 0,
                   borderRadius: 'var(--radius-pill)',
-                  background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.88) 0%, rgba(59, 130, 246, 0.72) 100%)',
-                  border: '1px solid rgba(147, 197, 253, 0.7)',
-                  boxShadow: '0 0 20px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35)',
+                  background: 'linear-gradient(135deg, #1d4ed8 0%, #0284c7 100%)',
+                  border: '1px solid rgba(56, 189, 248, 0.75)',
+                  boxShadow: '0 4px 20px rgba(2, 132, 199, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
                   zIndex: -1,
                 }}
                 transition={{
