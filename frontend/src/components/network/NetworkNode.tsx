@@ -29,6 +29,8 @@ const NetworkNode: React.FC<Props> = ({
       onMouseEnter={() => onHover?.([x, y])}
       onMouseLeave={() => onHover?.(null)}
       onClick={() => onClick?.([x, y])}
+      data-cursor="node"
+      data-cursor-label="INSPECT"
       style={{ cursor: 'pointer' }}
       role="button"
       aria-label={`Node ${x},${y}`}

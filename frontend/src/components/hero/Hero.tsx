@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import NetworkGraph from '../network/NetworkGraph';
+import MagneticButton from '../common/MagneticButton';
 
 interface Props {
   onRunSimulation: () => void;
@@ -16,21 +17,21 @@ const Hero: React.FC<Props> = ({ onRunSimulation, isLoading }) => {
         display: 'grid',
         gridTemplateColumns: '1fr',
         alignItems: 'center',
-        padding: 'var(--space-24) var(--space-6)',
+        padding: 'calc(var(--space-24) + 20px) var(--space-6) var(--space-16)',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      {/* Background subtle grid pattern */}
+      {/* Precision grid pattern */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
           backgroundImage: `
-            linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px)
+            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)
           `,
-          backgroundSize: '80px 80px',
+          backgroundSize: '64px 64px',
           pointerEvents: 'none',
         }}
       />
@@ -40,25 +41,26 @@ const Hero: React.FC<Props> = ({ onRunSimulation, isLoading }) => {
         style={{
           display: 'grid',
           gridTemplateColumns: '1fr',
-          gap: 'var(--space-12)',
+          gap: 'var(--space-10)',
           alignItems: 'center',
         }}
       >
         {/* Text content */}
-        <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
-          {/* Technical label */}
+        <div style={{ maxWidth: 860, margin: '0 auto', textAlign: 'center' }}>
+          {/* Technical metadata badge */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="label"
+            transition={{ duration: 0.5, delay: 0.2 }}
             style={{
               marginBottom: 'var(--space-6)',
-              color: 'var(--color-accent)',
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              gap: 'var(--space-3)',
+              gap: '8px',
+              padding: '4px 12px',
+              background: 'rgba(59, 130, 246, 0.08)',
+              border: '1px solid rgba(59, 130, 246, 0.2)',
+              borderRadius: 'var(--radius-xs)',
             }}
           >
             <span
@@ -66,56 +68,62 @@ const Hero: React.FC<Props> = ({ onRunSimulation, isLoading }) => {
                 width: 6,
                 height: 6,
                 borderRadius: '50%',
-                backgroundColor: 'var(--color-accent)',
-                display: 'inline-block',
-                animation: 'pulse-dot 2s ease-in-out infinite',
+                backgroundColor: 'var(--color-accent-bright)',
+                boxShadow: '0 0 8px var(--color-accent)',
+                animation: 'pulse-dot 2.4s ease-in-out infinite',
               }}
             />
-            AI-02 / System-Optimal Transit Rerouting
+            <span
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 'var(--text-meta)',
+                fontWeight: 600,
+                letterSpacing: 'var(--tracking-wider)',
+                color: 'var(--color-accent-bright)',
+                textTransform: 'uppercase',
+              }}
+            >
+              SYS.01 // SYSTEM-OPTIMAL TRANSIT REROUTING
+            </span>
           </motion.div>
 
-          {/* Headline */}
+          {/* High-contrast Editorial Headline */}
           <motion.h1
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.8, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className="hero-title"
             style={{
-              fontSize: 'var(--text-display)',
-              fontWeight: 800,
-              lineHeight: 'var(--leading-tight)',
-              letterSpacing: 'var(--tracking-tight)',
-              color: 'var(--color-text-primary)',
-              marginBottom: 'var(--space-8)',
+              marginBottom: 'var(--space-6)',
+              textWrap: 'balance',
             }}
           >
-            When the network{' '}
+            <span>When the network</span>{' '}
             <span style={{ color: 'var(--color-danger)' }}>breaks</span>,
             <br />
-            <span style={{ color: 'var(--color-accent-bright)' }}>flow</span> adapts.
+            <span style={{ color: 'var(--color-accent-bright)' }}>flow</span>{' '}
+            <span>adapts.</span>
           </motion.h1>
 
-          {/* Description */}
+          {/* Balanced Body Description */}
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="hero-subtitle"
             style={{
-              fontSize: 'clamp(1rem, 1.5vw, 1.25rem)',
-              lineHeight: 'var(--leading-relaxed)',
-              color: 'var(--color-text-secondary)',
-              maxWidth: 580,
-              margin: '0 auto var(--space-10)',
+              margin: '0 auto var(--space-8)',
             }}
           >
-            Simulating congestion-aware rerouting across a disrupted
-            transit grid. 120 trips. One broken edge. System-wide optimization.
+            Simulating congestion-aware rerouting across a disrupted transit grid.
+            120 trips. One broken edge. System-wide optimization.
           </motion.p>
 
-          {/* CTAs */}
+          {/* Physical Instrument CTAs with Magnetic Physics */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
+            transition={{ duration: 0.6, delay: 0.65 }}
             style={{
               display: 'flex',
               gap: 'var(--space-4)',
@@ -123,77 +131,61 @@ const Hero: React.FC<Props> = ({ onRunSimulation, isLoading }) => {
               flexWrap: 'wrap',
             }}
           >
-            <button
+            <MagneticButton
               onClick={onRunSimulation}
               disabled={isLoading}
-              data-cursor="expand"
+              className="btn-instrument btn-instrument-primary"
+              data-cursor="button"
+              data-cursor-label={isLoading ? 'COMPUTING' : 'OPTIMIZE'}
               style={{
-                padding: '14px 36px',
-                background: isLoading ? 'var(--color-bg-hover)' : 'var(--color-accent)',
-                color: isLoading ? 'var(--color-text-muted)' : '#fff',
-                borderRadius: 'var(--radius-pill)',
-                fontSize: 'var(--text-small)',
-                fontWeight: 600,
-                letterSpacing: 'var(--tracking-wide)',
-                textTransform: 'uppercase',
-                fontFamily: 'var(--font-mono)',
-                transition: 'all 0.25s var(--ease-out)',
-                boxShadow: isLoading ? 'none' : 'var(--shadow-glow-accent)',
-                position: 'relative',
-                overflow: 'hidden',
+                padding: '0 var(--space-8)',
+                height: '46px',
               }}
             >
               {isLoading ? (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <motion.span
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
                     style={{
-                      width: 14,
-                      height: 14,
-                      border: '2px solid var(--color-text-muted)',
-                      borderTopColor: 'transparent',
+                      width: 13,
+                      height: 13,
+                      border: '2px solid rgba(255, 255, 255, 0.4)',
+                      borderTopColor: '#ffffff',
                       borderRadius: '50%',
                       display: 'inline-block',
                     }}
                   />
-                  Optimizing Flows
+                  <span>OPTIMIZING FLOWS</span>
                 </span>
               ) : (
-                'Run Simulation'
+                'RUN SIMULATION'
               )}
-            </button>
+            </MagneticButton>
 
-            <button
+            <MagneticButton
               onClick={() => {
                 const el = document.getElementById('network');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
-              data-cursor="expand"
+              className="btn-instrument"
+              data-cursor="button"
+              data-cursor-label="EXPLORE"
               style={{
-                padding: '14px 36px',
-                background: 'transparent',
-                color: 'var(--color-text-secondary)',
-                borderRadius: 'var(--radius-pill)',
-                fontSize: 'var(--text-small)',
-                fontWeight: 500,
-                letterSpacing: 'var(--tracking-wide)',
-                textTransform: 'uppercase',
-                fontFamily: 'var(--font-mono)',
-                border: '1px solid var(--color-border)',
-                transition: 'all 0.25s var(--ease-out)',
+                padding: '0 var(--space-8)',
+                height: '46px',
               }}
             >
-              Explore Network
-            </button>
+              EXPLORE NETWORK
+            </MagneticButton>
           </motion.div>
         </div>
 
-        {/* Network visualization */}
+        {/* Network visualization with ambient glow */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, delay: 1, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.9, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
           style={{
             display: 'flex',
             justifyContent: 'center',
@@ -201,21 +193,23 @@ const Hero: React.FC<Props> = ({ onRunSimulation, isLoading }) => {
             position: 'relative',
           }}
         >
-          <div style={{
-            position: 'relative',
-            width: 'min(90vw, 420px)',
-            height: 'min(90vw, 420px)',
-          }}>
-            {/* Subtle glow behind the network */}
+          <div
+            style={{
+              position: 'relative',
+              width: 'min(90vw, 420px)',
+              height: 'min(90vw, 420px)',
+            }}
+          >
+            {/* Ambient accent light */}
             <div
               style={{
                 position: 'absolute',
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-                width: '120%',
-                height: '120%',
-                background: 'radial-gradient(circle, var(--color-accent-glow) 0%, transparent 70%)',
+                width: '110%',
+                height: '110%',
+                background: 'radial-gradient(circle, var(--color-accent-glow) 0%, transparent 68%)',
                 pointerEvents: 'none',
               }}
             />
@@ -231,45 +225,44 @@ const Hero: React.FC<Props> = ({ onRunSimulation, isLoading }) => {
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
+      {/* Subtle Hardware Scroll Cue */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 2 }}
+        transition={{ delay: 1.5 }}
         style={{
           position: 'absolute',
-          bottom: 'var(--space-10)',
+          bottom: 'var(--space-8)',
           left: '50%',
           transform: 'translateX(-50%)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 'var(--space-3)',
+          gap: 'var(--space-2)',
         }}
       >
         <span
           className="label"
-          style={{ fontSize: 'var(--text-meta)' }}
+          style={{ fontSize: '0.625rem', letterSpacing: '0.16em', opacity: 0.7 }}
         >
-          Scroll to explore
+          SCROLL TO EXPLORE
         </span>
         <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          animate={{ y: [0, 5, 0] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
           style={{
             width: 1,
-            height: 24,
-            backgroundColor: 'var(--color-text-muted)',
-            opacity: 0.5,
+            height: 20,
+            background: 'linear-gradient(180deg, var(--color-text-muted) 0%, transparent 100%)',
           }}
         />
       </motion.div>
 
-      {/* pulse-dot keyframes */}
+      {/* Keyframes */}
       <style>{`
         @keyframes pulse-dot {
           0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(0.8); }
+          50% { opacity: 0.4; transform: scale(0.85); }
         }
       `}</style>
     </section>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, useInView } from 'framer-motion';
+import MagneticButton from '../common/MagneticButton';
 
 const ClosingSection: React.FC = () => {
   const ref = React.useRef(null);
@@ -68,28 +69,23 @@ const ClosingSection: React.FC = () => {
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <button
+          <MagneticButton
             onClick={() => {
               const el = document.getElementById('simulation');
               if (el) el.scrollIntoView({ behavior: 'smooth' });
             }}
-            data-cursor="expand"
+            data-cursor="button"
+            data-cursor-label="SIMULATE"
+            className="btn-instrument btn-instrument-primary"
             style={{
-              padding: '14px 40px',
-              background: 'var(--color-accent)',
-              color: '#fff',
-              borderRadius: 'var(--radius-pill)',
+              height: '48px',
+              padding: '0 40px',
               fontSize: 'var(--text-small)',
-              fontWeight: 600,
               letterSpacing: 'var(--tracking-wide)',
-              textTransform: 'uppercase',
-              fontFamily: 'var(--font-mono)',
-              boxShadow: 'var(--shadow-glow-accent)',
-              transition: 'all 0.25s var(--ease-out)',
             }}
           >
             Run Simulation
-          </button>
+          </MagneticButton>
         </motion.div>
 
         {/* Footer */}

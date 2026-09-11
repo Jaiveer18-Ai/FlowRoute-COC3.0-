@@ -64,6 +64,7 @@ const NetworkEdge: React.FC<Props> = ({
     <g
       onMouseEnter={() => onHover?.({ from, to })}
       onMouseLeave={() => onHover?.(null)}
+      data-cursor="edge"
       style={{ cursor: isDisrupted ? 'not-allowed' : 'pointer' }}
     >
       {/* Hit area — wider invisible stroke for easier hover */}

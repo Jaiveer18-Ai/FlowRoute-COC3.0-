@@ -42,7 +42,7 @@ const RouteInspector: React.FC<Props> = ({
         {selectedTripId !== null && (
           <button
             onClick={() => onSelectTrip(null)}
-            data-cursor="expand"
+            data-cursor="button"
             style={{
               fontFamily: 'var(--font-mono)',
               fontSize: 'var(--text-meta)',
@@ -51,8 +51,8 @@ const RouteInspector: React.FC<Props> = ({
               color: 'var(--color-text-muted)',
               padding: '4px 12px',
               border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-pill)',
-              transition: 'color 0.2s ease',
+              borderRadius: 'var(--radius-xs)',
+              transition: 'all 0.2s ease',
             }}
           >
             Clear
@@ -180,7 +180,8 @@ const RouteInspector: React.FC<Props> = ({
           <button
             key={route.trip_id}
             onClick={() => onSelectTrip(route.trip_id === selectedTripId ? null : route.trip_id)}
-            data-cursor="expand"
+            data-cursor="route"
+            data-cursor-label="TRACE"
             style={{
               padding: '6px 4px',
               background: route.trip_id === selectedTripId
@@ -191,7 +192,7 @@ const RouteInspector: React.FC<Props> = ({
                   ? (routeType === 'optimized' ? 'var(--color-accent)' : 'var(--color-warning)')
                   : 'var(--color-border)'
               }`,
-              borderRadius: 'var(--radius-sm)',
+              borderRadius: 'var(--radius-xs)',
               fontFamily: 'var(--font-mono)',
               fontSize: '11px',
               color: route.trip_id === selectedTripId
@@ -209,7 +210,7 @@ const RouteInspector: React.FC<Props> = ({
       {routes.length > 20 && (
         <button
           onClick={() => setShowAll(!showAll)}
-          data-cursor="expand"
+          data-cursor="button"
           style={{
             marginTop: 'var(--space-3)',
             fontFamily: 'var(--font-mono)',
@@ -219,8 +220,8 @@ const RouteInspector: React.FC<Props> = ({
             color: 'var(--color-text-muted)',
             padding: '6px 16px',
             border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-pill)',
-            transition: 'color 0.2s ease',
+            borderRadius: 'var(--radius-xs)',
+            transition: 'all 0.2s ease',
           }}
         >
           {showAll ? 'Show Less' : `Show All ${routes.length}`}

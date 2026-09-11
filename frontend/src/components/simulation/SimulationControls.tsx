@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SimulationState } from '../../types/contract';
+import MagneticButton from '../common/MagneticButton';
 
 interface Props {
   status: SimulationState;
@@ -168,27 +169,18 @@ const SimulationControls: React.FC<Props> = ({
         gap: 'var(--space-3)',
         flexWrap: 'wrap',
       }}>
-        <button
+        <MagneticButton
           onClick={onRunSimulation}
           disabled={isLoading}
-          data-cursor="expand"
+          data-cursor="button"
+          data-cursor-label={isLoading ? 'COMPUTING' : 'OPTIMIZE'}
+          className="btn-instrument btn-instrument-primary"
           style={{
             flex: 1,
-            padding: '12px 24px',
-            background: isLoading ? 'var(--color-bg-hover)' : 'var(--color-accent)',
-            color: isLoading ? 'var(--color-text-muted)' : '#fff',
-            borderRadius: 'var(--radius-md)',
+            height: '46px',
             fontSize: 'var(--text-small)',
-            fontWeight: 600,
-            fontFamily: 'var(--font-mono)',
             letterSpacing: 'var(--tracking-wide)',
             textTransform: 'uppercase',
-            transition: 'all 0.2s var(--ease-out)',
-            boxShadow: isLoading ? 'none' : 'var(--shadow-glow-accent)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 'var(--space-2)',
           }}
         >
           {isLoading && (
@@ -206,28 +198,21 @@ const SimulationControls: React.FC<Props> = ({
             />
           )}
           {isComplete ? 'Run Again' : isLoading ? 'Processing' : 'Run Simulation'}
-        </button>
+        </MagneticButton>
 
         {(isComplete || status === 'error') && (
-          <button
+          <MagneticButton
             onClick={onReset}
-            data-cursor="expand"
+            data-cursor="button"
+            className="btn-instrument"
             style={{
-              padding: '12px 20px',
-              background: 'var(--color-bg-surface)',
+              padding: '0 20px',
+              height: '46px',
               color: 'var(--color-text-secondary)',
-              borderRadius: 'var(--radius-md)',
-              fontSize: 'var(--text-small)',
-              fontWeight: 500,
-              fontFamily: 'var(--font-mono)',
-              letterSpacing: 'var(--tracking-wide)',
-              textTransform: 'uppercase',
-              border: '1px solid var(--color-border)',
-              transition: 'all 0.2s var(--ease-out)',
             }}
           >
             Reset
-          </button>
+          </MagneticButton>
         )}
       </div>
 

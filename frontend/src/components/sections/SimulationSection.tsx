@@ -139,7 +139,7 @@ const SimulationSection: React.FC<Props> = ({
                     <button
                       key={mode}
                       onClick={() => setViewMode(mode)}
-                      data-cursor="expand"
+                      data-cursor="button"
                       style={{
                         padding: '8px 24px',
                         borderRadius: 'var(--radius-pill)',
