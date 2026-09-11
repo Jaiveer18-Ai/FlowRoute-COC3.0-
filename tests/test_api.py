@@ -1,79 +1,89 @@
-"""Automated tests for Backend API and Integration layer.
+"""Comprehensive automated tests for Backend API and Integration layer.
 
 Covers:
-1. Health endpoint (GET /health)
-2. Instance generation endpoint (POST /api/instance)
-3. Baseline routing endpoint (POST /api/baseline)
-4. Optimized routing endpoint (POST /api/optimize)
-5. Comparison endpoint (POST /api/compare)
-6. Route validation and disrupted edge enforcement
-7. Rejection of invalid routes
-8. Metrics calculation accuracy
-9. Determinism across runs with the same seed
+1. Health check (GET /health)
+2. Instance endpoint (POST /api/instance) with default, explicit, and invalid seeds
+3. Baseline routing (POST /api/baseline) with constraint checks
+4. Optimized routing (POST /api/optimize)
+5. Side-by-side comparison (POST /api/compare)
+6. Disrupted edge (2,2) <-> (3,2) strictly avoided in all generated routes
+7. Rejection of invalid routes (disrupted edge traversal, loops, wrong endpoints, non-adjacent hops)
+8. Canonical edge ID formatting and validation
+9. BPR travel time formula & percentile metrics correctness
+10. Mock optimizer integration boundary verification
+11. CORS preflight headers check
 """
 
+from unittest.mock import patch
 import pytest
-from fastapi.testclient import TestClient
 
 from backend.app.config import DISRUPTED_EDGE, EDGE_CAPACITY, GRID_SIZE, TOTAL_TRIPS
-from backend.app.main import app
-from backend.app.services.metrics import calculate_metrics, compute_edge_travel_time
+from backend.app.services.metrics import calculate_metrics, canonical_edge_id, compute_edge_travel_time
 from backend.app.services.validation import (
     ValidationError,
     is_disrupted_segment,
+    validate_canonical_edge_id,
     validate_routes,
     validate_simulation_result,
 )
+from backend.app.services import optimizer_adapter
 
-client = TestClient(app)
 
-
-def test_health_endpoint():
-    """Verify GET /health returns status: ok."""
+def test_health_endpoint(client):
+    """Verify GET /health returns status: ok (Contract.md Section 15)."""
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
 
-def test_api_instance_structure_and_determinism():
-    """Verify POST /api/instance returns valid structure and is deterministic."""
-    resp1 = client.post("/api/instance", json={"seed": 42})
-    assert resp1.status_code == 200
-    data1 = resp1.json()
+def test_api_instance_default_and_explicit_seed(client):
+    """Verify POST /api/instance with explicit seed and default empty body."""
+    # Explicit seed
+    resp_explicit = client.post("/api/instance", json={"seed": 42})
+    assert resp_explicit.status_code == 200
+    data = resp_explicit.json()
 
-    # Verify seed
-    assert data1["seed"] == 42
+    assert data["seed"] == 42
+    assert len(data["nodes"]) == 25
+    assert len(data["trips"]) == TOTAL_TRIPS
 
-    # Verify nodes (5x5 = 25 nodes)
-    assert len(data1["nodes"]) == 25
-    for node in data1["nodes"]:
+    # Default empty body
+    resp_default = client.post("/api/instance", json={})
+    assert resp_default.status_code == 200
+    assert resp_default.json() == data
+
+
+def test_api_instance_determinism_and_constraints(client):
+    """Verify nodes, edges, trips structure and determinism."""
+    resp = client.post("/api/instance", json={"seed": 42})
+    data = resp.json()
+
+    # All nodes within 0..4
+    for node in data["nodes"]:
         assert len(node["id"]) == 2
         assert 0 <= node["x"] < GRID_SIZE
         assert 0 <= node["y"] < GRID_SIZE
+        assert node["id"] == [node["x"], node["y"]]
 
-    # Verify trips (120 trips)
-    assert len(data1["trips"]) == TOTAL_TRIPS
-    for i, trip in enumerate(data1["trips"]):
+    # Verify edge structure and disrupted flag
+    disrupted_count = 0
+    for edge in data["edges"]:
+        assert edge["capacity"] == EDGE_CAPACITY
+        assert "from" in edge
+        assert "to" in edge
+        if edge["disrupted"]:
+            disrupted_count += 1
+            endpoints = {tuple(edge["from"]), tuple(edge["to"])}
+            assert endpoints == {DISRUPTED_EDGE[0], DISRUPTED_EDGE[1]}
+    assert disrupted_count == 1, "Exactly one edge must be marked disrupted"
+
+    # Verify trip IDs 0..119 and non-identical origin/destinations
+    for i, trip in enumerate(data["trips"]):
         assert trip["id"] == i
         assert trip["origin"] != trip["destination"]
 
-    # Verify edges
-    assert len(data1["edges"]) > 0
-    disrupted_found = False
-    for edge in data1["edges"]:
-        assert edge["capacity"] == EDGE_CAPACITY
-        if edge["disrupted"]:
-            disrupted_found = True
-            endpoints = {tuple(edge["from"]), tuple(edge["to"])}
-            assert endpoints == {DISRUPTED_EDGE[0], DISRUPTED_EDGE[1]}
-    assert disrupted_found, "Disrupted edge must be marked in instance edges"
 
-    # Verify determinism
-    resp2 = client.post("/api/instance", json={"seed": 42})
-    assert resp2.json() == data1
-
-
-def test_api_baseline():
+def test_api_baseline(client):
     """Verify POST /api/baseline returns valid routes, edge_flows, and metrics."""
     response = client.post("/api/baseline", json={"seed": 42})
     assert response.status_code == 200
@@ -87,14 +97,14 @@ def test_api_baseline():
     assert "p95_travel_time" in baseline["metrics"]
     assert "max_congestion_ratio" in baseline["metrics"]
 
-    # Verify no route traverses the disrupted edge
+    # Verify no route traverses the disrupted edge (2,2) <-> (3,2)
     for route in baseline["routes"]:
         path = route["path"]
         for i in range(len(path) - 1):
             assert not is_disrupted_segment(path[i], path[i + 1])
 
 
-def test_api_optimize():
+def test_api_optimize(client):
     """Verify POST /api/optimize returns valid optimized result."""
     response = client.post("/api/optimize", json={"seed": 42})
     assert response.status_code == 200
@@ -109,7 +119,7 @@ def test_api_optimize():
     assert optimized["metrics"]["max_congestion_ratio"] >= 0
 
 
-def test_api_compare():
+def test_api_compare(client):
     """Verify POST /api/compare returns both baseline and optimized with seed."""
     response = client.post("/api/compare", json={"seed": 42})
     assert response.status_code == 200
@@ -122,55 +132,122 @@ def test_api_compare():
     assert len(data["optimized"]["routes"]) == TOTAL_TRIPS
 
 
-def test_invalid_seed():
-    """Verify negative seed returns 400 Bad Request."""
+def test_invalid_seed_negative(client):
+    """Verify negative seed returns 400 Bad Request with detail string."""
     response = client.post("/api/instance", json={"seed": -1})
     assert response.status_code == 400
     assert "detail" in response.json()
+    assert isinstance(response.json()["detail"], str)
 
 
-def test_route_validation_rejection():
-    """Verify validator rejects invalid routes (e.g. crossing disrupted edge or wrong endpoint)."""
+def test_invalid_seed_type(client):
+    """Verify non-integer seed returns 422 Unprocessable Entity with detail string."""
+    response = client.post("/api/instance", json={"seed": "not_an_int"})
+    assert response.status_code == 422
+    assert "detail" in response.json()
+    assert isinstance(response.json()["detail"], str)
+
+
+def test_route_validation_rejections():
+    """Verify validator catches disrupted edges, loops, non-adjacent hops, and endpoint mismatches."""
     trips = [
         {"id": 0, "origin": [2, 2], "destination": [3, 2]},
+        {"id": 1, "origin": [0, 0], "destination": [0, 2]},
     ]
-    # Route that attempts to cross the disrupted edge (2,2) -> (3,2)
-    invalid_routes = [
-        {"trip_id": 0, "path": [[2, 2], [3, 2]], "travel_time": 1.0}
+
+    # 1. Traverses disrupted edge (2,2) -> (3,2)
+    invalid_disrupted = [
+        {"trip_id": 0, "path": [[2, 2], [3, 2]], "travel_time": 1.0},
+        {"trip_id": 1, "path": [[0, 0], [0, 1], [0, 2]], "travel_time": 2.0},
     ]
     with pytest.raises(ValidationError, match="traversed disrupted edge"):
-        validate_routes(invalid_routes, trips)
+        validate_routes(invalid_disrupted, trips)
 
-    # Route that does not reach destination
-    wrong_destination_routes = [
-        {"trip_id": 0, "path": [[2, 2], [2, 3], [3, 3]], "travel_time": 2.0}
+    # 2. Wrong destination
+    invalid_dest = [
+        {"trip_id": 0, "path": [[2, 2], [2, 3], [3, 3]], "travel_time": 2.0},
+        {"trip_id": 1, "path": [[0, 0], [0, 1], [0, 2]], "travel_time": 2.0},
     ]
     with pytest.raises(ValidationError, match="does not end at destination"):
-        validate_routes(wrong_destination_routes, trips)
+        validate_routes(invalid_dest, trips)
 
-    # Route that is not a simple path (loop)
-    loop_routes = [
-        {"trip_id": 0, "path": [[2, 2], [2, 3], [2, 2], [2, 1], [3, 1], [3, 2]], "travel_time": 5.0}
+    # 3. Not a simple path (loop/revisited node)
+    invalid_loop = [
+        {"trip_id": 0, "path": [[2, 2], [2, 3], [2, 2], [2, 1], [3, 1], [3, 2]], "travel_time": 5.0},
+        {"trip_id": 1, "path": [[0, 0], [0, 1], [0, 2]], "travel_time": 2.0},
     ]
     with pytest.raises(ValidationError, match="not a simple path"):
-        validate_routes(loop_routes, trips)
+        validate_routes(invalid_loop, trips)
+
+    # 4. Non-adjacent step (diagonal jump)
+    invalid_diagonal = [
+        {"trip_id": 0, "path": [[2, 2], [3, 3], [3, 2]], "travel_time": 2.0},
+        {"trip_id": 1, "path": [[0, 0], [0, 1], [0, 2]], "travel_time": 2.0},
+    ]
+    with pytest.raises(ValidationError, match="non-adjacent step"):
+        validate_routes(invalid_diagonal, trips)
+
+    # 5. Missing trip route
+    missing_route = [
+        {"trip_id": 0, "path": [[2, 2], [2, 3], [3, 3], [3, 2]], "travel_time": 3.0}
+    ]
+    with pytest.raises(ValidationError, match="Expected 2 routes"):
+        validate_routes(missing_route, trips)
+
+
+def test_canonical_edge_validation():
+    """Verify canonical edge formatting and validation."""
+    # Valid canonical edge
+    validate_canonical_edge_id("2,2-2,3")
+    validate_canonical_edge_id("0,0-1,0")
+
+    # Non-canonical ordering
+    with pytest.raises(ValidationError, match="not canonically ordered"):
+        validate_canonical_edge_id("2,3-2,2")
+
+    # Non-adjacent edge ID
+    with pytest.raises(ValidationError, match="non-adjacent"):
+        validate_canonical_edge_id("0,0-2,0")
+
+    # Helper function check
+    assert canonical_edge_id([2, 3], [3, 3]) == "2,3-3,3"
+    assert canonical_edge_id([3, 3], [2, 3]) == "2,3-3,3"
 
 
 def test_metrics_calculation_formula():
-    """Verify BPR formula and metrics calculations match Contract.md."""
-    # Free-flow: flow = 0 -> time = 1.0
+    """Verify BPR formula t_e = 1 + 0.15 * (flow / 8)^4 and metrics computation."""
     assert compute_edge_travel_time(0) == 1.0
-    # Capacity: flow = 8 -> 1 + 0.15 * (8/8)^4 = 1.15
     assert compute_edge_travel_time(8) == 1.15
-    # Over capacity: flow = 16 -> 1 + 0.15 * (16/8)^4 = 1 + 0.15 * 16 = 3.40
     assert compute_edge_travel_time(16) == 3.40
 
-    sample_routes = [
+    routes = [
         {"trip_id": 0, "travel_time": 2.0},
         {"trip_id": 1, "travel_time": 4.0},
     ]
-    sample_flows = {"0,0-0,1": 8, "0,1-0,2": 16}
-    metrics = calculate_metrics(sample_routes, sample_flows)
+    edge_flows = {"0,0-0,1": 8, "0,1-0,2": 16}
+    metrics = calculate_metrics(routes, edge_flows)
 
     assert metrics["mean_travel_time"] == 3.0
     assert metrics["max_congestion_ratio"] == 2.0
+
+
+def test_optimizer_integration_mock():
+    """Verify optimizer_adapter delegates to teammate's functions when provided."""
+    mock_instance = {"seed": 99, "nodes": [], "edges": [], "trips": []}
+    with patch.object(optimizer_adapter, "_find_optimizer_callable") as mock_find:
+        mock_find.return_value = lambda seed: mock_instance
+        result = optimizer_adapter.get_instance(99)
+        assert result["seed"] == 99
+
+
+def test_cors_preflight_headers(client):
+    """Verify CORS preflight headers allow frontend origin http://localhost:5173."""
+    response = client.options(
+        "/api/compare",
+        headers={
+            "Origin": "http://localhost:5173",
+            "Access-Control-Request-Method": "POST",
+        },
+    )
+    assert response.status_code == 200
+    assert response.headers.get("access-control-allow-origin") == "http://localhost:5173"

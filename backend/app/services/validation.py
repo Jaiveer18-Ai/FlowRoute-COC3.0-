@@ -1,7 +1,10 @@
 """Validation service for routes, instances, and simulation results."""
 
+import re
 from typing import Any, Dict, List, Set, Tuple
 from backend.app.config import DISRUPTED_EDGE, GRID_SIZE, TOTAL_TRIPS
+
+CANONICAL_EDGE_REGEX = re.compile(r"^([0-4]),([0-4])-([0-4]),([0-4])$")
 
 
 class ValidationError(Exception):
@@ -25,6 +28,20 @@ def is_disrupted_segment(u: List[int], v: List[int]) -> bool:
 def is_adjacent(u: List[int], v: List[int]) -> bool:
     """Check Manhattan distance == 1 on 5x5 grid."""
     return (abs(u[0] - v[0]) + abs(u[1] - v[1])) == 1
+
+
+def validate_canonical_edge_id(edge_id: str) -> None:
+    """Ensure edge ID conforms to 'x1,y1-x2,y2' with canonical endpoint sorting."""
+    match = CANONICAL_EDGE_REGEX.match(edge_id)
+    if not match:
+        raise ValidationError(f"Invalid canonical edge ID format: '{edge_id}'. Expected 'x1,y1-x2,y2'.")
+    x1, y1, x2, y2 = map(int, match.groups())
+    if (x1, y1) > (x2, y2):
+        raise ValidationError(
+            f"Edge ID '{edge_id}' endpoints are not canonically ordered. Expected '{x2},{y2}-{x1},{y1}'."
+        )
+    if not is_adjacent([x1, y1], [x2, y2]):
+        raise ValidationError(f"Edge ID '{edge_id}' references non-adjacent nodes.")
 
 
 def validate_routes(routes: List[dict], trips: List[dict]) -> None:
@@ -100,15 +117,23 @@ def validate_routes(routes: List[dict], trips: List[dict]) -> None:
 
 def validate_simulation_result(result: Dict[str, Any], trips: List[dict]) -> None:
     """Validate full simulation output structure (routes, edge_flows, metrics)."""
-    if "routes" not in result:
-        raise ValidationError("Simulation result missing 'routes'.")
+    if "routes" not in result or not isinstance(result["routes"], list):
+        raise ValidationError("Simulation result missing 'routes' list.")
     if "edge_flows" not in result or not isinstance(result["edge_flows"], dict):
         raise ValidationError("Simulation result missing or invalid 'edge_flows'.")
     if "metrics" not in result or not isinstance(result["metrics"], dict):
         raise ValidationError("Simulation result missing or invalid 'metrics'.")
 
+    # Validate route paths
     validate_routes(result["routes"], trips)
 
+    # Validate canonical edge flow keys
+    for edge_id, flow in result["edge_flows"].items():
+        validate_canonical_edge_id(edge_id)
+        if not isinstance(flow, int) or flow < 0:
+            raise ValidationError(f"Edge flow for '{edge_id}' must be a non-negative integer, got {flow}.")
+
+    # Validate metrics
     metrics = result["metrics"]
     for required_metric in ("mean_travel_time", "p95_travel_time", "max_congestion_ratio"):
         if required_metric not in metrics:

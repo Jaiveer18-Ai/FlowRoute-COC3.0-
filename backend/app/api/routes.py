@@ -27,7 +27,7 @@ router = APIRouter()
     responses={500: {"model": ErrorResponse}},
 )
 async def health_check() -> HealthResponse:
-    """Check health status of the backend API."""
+    """Check health status of the backend API (Contract.md Section 15)."""
     return HealthResponse(status="ok")
 
 
@@ -42,8 +42,10 @@ async def health_check() -> HealthResponse:
         500: {"model": ErrorResponse},
     },
 )
-async def create_instance(request: InstanceRequest) -> InstanceResponse:
-    """Generate a deterministic 5x5 grid instance with 120 trips."""
+async def create_instance(
+    request: InstanceRequest = InstanceRequest(),
+) -> InstanceResponse:
+    """Generate a deterministic 5x5 grid instance with 120 trips (Contract.md Section 16)."""
     if request.seed < 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -64,8 +66,10 @@ async def create_instance(request: InstanceRequest) -> InstanceResponse:
         500: {"model": ErrorResponse},
     },
 )
-async def solve_baseline_endpoint(request: BaselineRequest) -> BaselineResponse:
-    """Compute baseline shortest path routing and congestion metrics."""
+async def solve_baseline_endpoint(
+    request: BaselineRequest = BaselineRequest(),
+) -> BaselineResponse:
+    """Compute baseline shortest path routing and congestion metrics (Contract.md Section 17)."""
     if request.seed < 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -86,8 +90,10 @@ async def solve_baseline_endpoint(request: BaselineRequest) -> BaselineResponse:
         500: {"model": ErrorResponse},
     },
 )
-async def solve_optimize_endpoint(request: OptimizeRequest) -> OptimizeResponse:
-    """Compute congestion-aware optimized routing and metrics."""
+async def solve_optimize_endpoint(
+    request: OptimizeRequest = OptimizeRequest(),
+) -> OptimizeResponse:
+    """Compute congestion-aware optimized routing and metrics (Contract.md Section 18)."""
     if request.seed < 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -108,8 +114,10 @@ async def solve_optimize_endpoint(request: OptimizeRequest) -> OptimizeResponse:
         500: {"model": ErrorResponse},
     },
 )
-async def compare_endpoint(request: CompareRequest) -> CompareResponse:
-    """Primary frontend endpoint comparing baseline and optimized runs."""
+async def compare_endpoint(
+    request: CompareRequest = CompareRequest(),
+) -> CompareResponse:
+    """Primary frontend endpoint comparing baseline and optimized runs (Contract.md Section 19)."""
     if request.seed < 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
