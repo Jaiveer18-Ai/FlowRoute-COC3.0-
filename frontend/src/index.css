@@ -85,8 +85,8 @@
   --space-40:  10rem;
 
   /* ---- Layout ---- */
-  --max-width: 1360px;
-  --section-padding: clamp(4rem, 10vh, 8rem);
+  --max-width: 1440px;
+  --section-padding: clamp(4.5rem, 11vh, 8.5rem);
 
   /* ---- Radius (Restrained physical hardware aesthetic) ---- */
   --radius-xs:  3px;
@@ -159,22 +159,6 @@ body {
   min-height: 100vh;
 }
 
-/* Custom cursor activation: only hides native cursor when active & fine pointer */
-body.custom-cursor-active,
-body.custom-cursor-active a,
-body.custom-cursor-active button,
-body.custom-cursor-active [role="button"],
-body.custom-cursor-active [data-cursor] {
-  cursor: none !important;
-}
-
-/* Keep text cursor for user inputs */
-body.custom-cursor-active input,
-body.custom-cursor-active textarea,
-body.custom-cursor-active select {
-  cursor: text !important;
-}
-
 img, svg {
   display: block;
   max-width: 100%;
@@ -211,8 +195,15 @@ ul, ol {
 
 @media (min-width: 768px) {
   .container {
-    padding-left: var(--space-10);
-    padding-right: var(--space-10);
+    padding-left: var(--space-8);
+    padding-right: var(--space-8);
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    padding-left: var(--space-12);
+    padding-right: var(--space-12);
   }
 }
 

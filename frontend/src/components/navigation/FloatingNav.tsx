@@ -95,26 +95,25 @@ const FloatingNav: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
       aria-label="Primary navigation"
+      className="floating-nav-container"
       style={{
         position: 'fixed',
         top: 'var(--space-6)',
-        left: '50%',
-        transform: 'translateX(-50%)',
         zIndex: 'var(--z-nav)',
         display: 'flex',
-        gap: '2px',
-        padding: '4px',
-        background: isScrolled ? 'rgba(10, 10, 12, 0.88)' : 'rgba(10, 10, 12, 0.55)',
-        backdropFilter: 'blur(20px) saturate(1.5)',
-        WebkitBackdropFilter: 'blur(20px) saturate(1.5)',
-        border: '1px solid var(--color-border-subtle)',
+        alignItems: 'center',
+        gap: '4px',
+        padding: '6px 8px',
+        background: isScrolled ? 'rgba(8, 12, 22, 0.9)' : 'rgba(10, 14, 26, 0.72)',
+        backdropFilter: 'blur(24px) saturate(1.7)',
+        WebkitBackdropFilter: 'blur(24px) saturate(1.7)',
+        border: '1px solid rgba(59, 130, 246, 0.28)',
         borderRadius: 'var(--radius-pill)',
         boxShadow: isScrolled
-          ? '0 8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
-          : '0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-        transition: 'background 0.3s ease, box-shadow 0.3s ease',
+          ? '0 16px 40px rgba(0, 0, 0, 0.7), 0 0 28px rgba(59, 130, 246, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.16)'
+          : '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 130, 246, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+        transition: 'all 0.3s ease',
         maxWidth: 'calc(100vw - 32px)',
-        overflowX: 'auto',
       }}
     >
       {NAV_ITEMS.map(({ id, label }) => {
@@ -123,21 +122,21 @@ const FloatingNav: React.FC = () => {
           <button
             key={id}
             onClick={() => scrollTo(id)}
-            data-cursor="nav"
             aria-current={isActive ? 'true' : undefined}
             style={{
               position: 'relative',
-              padding: '8px 18px',
+              padding: '10px 22px',
               borderRadius: 'var(--radius-pill)',
               fontFamily: 'var(--font-mono)',
-              fontSize: 'var(--text-meta)',
-              fontWeight: 500,
-              letterSpacing: 'var(--tracking-wider)',
+              fontSize: '0.8125rem',
+              fontWeight: isActive ? 600 : 500,
+              letterSpacing: '0.09em',
               textTransform: 'uppercase',
-              color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+              color: isActive ? '#ffffff' : 'rgba(203, 213, 225, 0.72)',
+              textShadow: isActive ? '0 0 12px rgba(96, 165, 250, 0.5)' : 'none',
               background: 'none',
               border: 'none',
-              transition: 'color 0.2s ease',
+              transition: 'color 0.2s ease, text-shadow 0.2s ease',
               zIndex: 1,
               whiteSpace: 'nowrap',
               cursor: 'pointer',
@@ -150,9 +149,9 @@ const FloatingNav: React.FC = () => {
                   position: 'absolute',
                   inset: 0,
                   borderRadius: 'var(--radius-pill)',
-                  background: 'var(--color-bg-surface)',
-                  border: '1px solid var(--color-border)',
-                  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
+                  background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.88) 0%, rgba(59, 130, 246, 0.72) 100%)',
+                  border: '1px solid rgba(147, 197, 253, 0.7)',
+                  boxShadow: '0 0 20px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35)',
                   zIndex: -1,
                 }}
                 transition={{
@@ -166,6 +165,29 @@ const FloatingNav: React.FC = () => {
           </button>
         );
       })}
+
+      <style>{`
+        .floating-nav-container {
+          right: 36px;
+          left: auto;
+          transform: none;
+        }
+        @media (max-width: 860px) {
+          .floating-nav-container {
+            left: 50% !important;
+            right: auto !important;
+            transform: translateX(-50%) !important;
+            width: calc(100% - 24px);
+            justify-content: space-between;
+            overflow-x: auto;
+            padding: 4px 6px !important;
+          }
+          .floating-nav-container button {
+            padding: 8px 14px !important;
+            font-size: 0.75rem !important;
+          }
+        }
+      `}</style>
     </motion.nav>
   );
 };

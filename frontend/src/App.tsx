@@ -1,6 +1,6 @@
 import React from 'react';
 import FloatingNav from './components/navigation/FloatingNav';
-import Cursor from './components/navigation/Cursor';
+import BackgroundEffects from './components/common/BackgroundEffects';
 import Hero from './components/hero/Hero';
 import NetworkSection from './components/sections/NetworkSection';
 import DisruptionSection from './components/sections/DisruptionSection';
@@ -14,7 +14,7 @@ const App: React.FC = () => {
 
   return (
     <>
-      <Cursor />
+      <BackgroundEffects />
       <FloatingNav />
 
       <main>

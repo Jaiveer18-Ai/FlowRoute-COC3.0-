@@ -73,6 +73,7 @@ const MagneticButton: React.FC<Props> = ({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
+        cursor: disabled ? 'not-allowed' : 'pointer',
         ...style,
         x: smoothX,
         y: smoothY,

@@ -81,6 +81,22 @@ const MetricCard: React.FC<MetricCardProps> = ({
         }}
       />
 
+      {/* Animated Luminous Shimmer Light Beam */}
+      <motion.div
+        animate={{ x: ['-100%', '200%'] }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'linear', delay: delay * 1.5 }}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '50%',
+          height: 2,
+          background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, transparent 100%)',
+          zIndex: 2,
+          pointerEvents: 'none',
+        }}
+      />
+
       <div
         className="label"
         style={{ marginBottom: 'var(--space-6)', color: 'var(--color-text-secondary)' }}

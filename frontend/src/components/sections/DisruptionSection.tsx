@@ -92,12 +92,15 @@ const DisruptionSection: React.FC = () => {
                 color: 'var(--color-danger)',
               }}
             >
-              <span
+              <motion.span
+                animate={{ scale: [1, 1.4, 1], opacity: [1, 0.4, 1] }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
                 style={{
                   width: 8,
                   height: 8,
                   borderRadius: '50%',
                   backgroundColor: 'var(--color-danger)',
+                  boxShadow: '0 0 10px var(--color-danger)',
                   display: 'inline-block',
                 }}
               />
@@ -121,6 +124,22 @@ const DisruptionSection: React.FC = () => {
               height: 'min(80vw, 480px)',
               position: 'relative',
             }}>
+              {/* Animated Seismic Shockwave Ring */}
+              <motion.div
+                animate={{ scale: [0.7, 1.35], opacity: [0.6, 0] }}
+                transition={{ duration: 2.4, repeat: Infinity, ease: 'easeOut' }}
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '240px',
+                  height: '240px',
+                  borderRadius: '50%',
+                  border: '2px solid rgba(239, 68, 68, 0.5)',
+                  pointerEvents: 'none',
+                }}
+              />
               {/* Danger glow */}
               <div
                 style={{
