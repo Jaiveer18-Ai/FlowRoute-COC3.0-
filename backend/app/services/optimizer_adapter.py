@@ -1,0 +1,245 @@
+"""Optimizer integration adapter.
+
+Connects the backend to Person 3's optimizer package according to
+Contract.md Section 13:
+- build_instance(seed: int = 42) -> dict
+- solve_baseline(instance: dict) -> dict
+- solve_optimized(instance: dict) -> dict
+- calculate_metrics(routes: list, edge_flows: dict) -> dict
+
+Includes a contract-compliant reference fallback so that backend & frontend
+can run end-to-end immediately even before Person 3 pushes the optimizer branch.
+When optimizer/ is present, it seamlessly delegates to it.
+"""
+
+import logging
+import random
+from typing import Any, Dict, List, Optional, Tuple
+import networkx as nx
+
+from backend.app.config import (
+    DISRUPTED_EDGE,
+    EDGE_CAPACITY,
+    FREE_FLOW_TIME,
+    GRID_SIZE,
+    TOTAL_TRIPS,
+)
+from backend.app.services.metrics import (
+    calculate_metrics as fallback_calculate_metrics,
+    canonical_edge_id,
+    compute_edge_travel_time,
+)
+
+logger = logging.getLogger("flowroute.optimizer_adapter")
+
+# Attempt dynamic import of teammate's optimizer module
+_real_optimizer = None
+try:
+    import optimizer
+    if hasattr(optimizer, "build_instance"):
+        _real_optimizer = optimizer
+        logger.info("Successfully connected to external 'optimizer' package.")
+except ImportError:
+    logger.info("External 'optimizer' package not yet detected. Using reference adapter.")
+
+
+# ---------------------------------------------------------------------------
+# Reference / Fallback implementation of Section 13 contract interfaces
+# ---------------------------------------------------------------------------
+
+def _build_reference_grid_graph() -> nx.Graph:
+    """Build 5x5 grid graph without the disrupted edge (2,2) <-> (3,2)."""
+    G = nx.grid_2d_graph(GRID_SIZE, GRID_SIZE)
+    d1, d2 = DISRUPTED_EDGE
+    if G.has_edge(d1, d2):
+        G.remove_edge(d1, d2)
+    return G
+
+
+def _reference_build_instance(seed: int = 42) -> dict:
+    """Build deterministic instance strictly conforming to Contract.md Sections 4-6."""
+    nodes = [{"id": [x, y], "x": x, "y": y} for x in range(GRID_SIZE) for y in range(GRID_SIZE)]
+
+    edges = []
+    d1, d2 = DISRUPTED_EDGE
+    for x in range(GRID_SIZE):
+        for y in range(GRID_SIZE):
+            if x + 1 < GRID_SIZE:
+                is_dis = ((x, y) == d1 and (x + 1, y) == d2) or ((x, y) == d2 and (x + 1, y) == d1)
+                edges.append({
+                    "id": canonical_edge_id([x, y], [x + 1, y]),
+                    "from": [x, y],
+                    "to": [x + 1, y],
+                    "capacity": EDGE_CAPACITY,
+                    "free_flow_time": FREE_FLOW_TIME,
+                    "flow": 0,
+                    "travel_time": FREE_FLOW_TIME,
+                    "disrupted": is_dis,
+                })
+            if y + 1 < GRID_SIZE:
+                is_dis = ((x, y) == d1 and (x, y + 1) == d2) or ((x, y) == d2 and (x, y + 1) == d1)
+                edges.append({
+                    "id": canonical_edge_id([x, y], [x, y + 1]),
+                    "from": [x, y],
+                    "to": [x, y + 1],
+                    "capacity": EDGE_CAPACITY,
+                    "free_flow_time": FREE_FLOW_TIME,
+                    "flow": 0,
+                    "travel_time": FREE_FLOW_TIME,
+                    "disrupted": is_dis,
+                })
+
+    rng = random.Random(seed)
+    trips = []
+    for i in range(TOTAL_TRIPS):
+        ox, oy = rng.randint(0, GRID_SIZE - 1), rng.randint(0, GRID_SIZE - 1)
+        dx, dy = rng.randint(0, GRID_SIZE - 1), rng.randint(0, GRID_SIZE - 1)
+        while (ox, oy) == (dx, dy):
+            dx, dy = rng.randint(0, GRID_SIZE - 1), rng.randint(0, GRID_SIZE - 1)
+        trips.append({
+            "id": i,
+            "origin": [ox, oy],
+            "destination": [dx, dy],
+        })
+
+    return {
+        "seed": seed,
+        "nodes": nodes,
+        "edges": edges,
+        "trips": trips,
+    }
+
+
+def _compute_flows_and_travel_times(
+    routes: List[dict],
+) -> Tuple[Dict[str, int], List[dict]]:
+    """Compute aggregated edge flows and update route travel times using BPR formula."""
+    edge_flows: Dict[str, int] = {}
+    for r in routes:
+        path = r["path"]
+        for i in range(len(path) - 1):
+            eid = canonical_edge_id(path[i], path[i + 1])
+            edge_flows[eid] = edge_flows.get(eid, 0) + 1
+
+    # Update each route's travel time based on final edge flows
+    updated_routes = []
+    for r in routes:
+        path = r["path"]
+        tt = 0.0
+        for i in range(len(path) - 1):
+            eid = canonical_edge_id(path[i], path[i + 1])
+            flow = edge_flows.get(eid, 0)
+            tt += compute_edge_travel_time(flow)
+        updated_routes.append({
+            "trip_id": r["trip_id"],
+            "path": path,
+            "travel_time": round(tt, 4),
+        })
+
+    return edge_flows, updated_routes
+
+
+def _reference_solve_baseline(instance: dict) -> dict:
+    """Solve baseline shortest paths avoiding disrupted edge."""
+    G = _build_reference_grid_graph()
+    raw_routes = []
+    for trip in instance["trips"]:
+        orig = tuple(trip["origin"])
+        dest = tuple(trip["destination"])
+        path = nx.shortest_path(G, source=orig, target=dest)
+        raw_routes.append({
+            "trip_id": trip["id"],
+            "path": [[x, y] for x, y in path],
+            "travel_time": float(len(path) - 1),
+        })
+
+    edge_flows, final_routes = _compute_flows_and_travel_times(raw_routes)
+    metrics = fallback_calculate_metrics(final_routes, edge_flows)
+    return {
+        "routes": final_routes,
+        "edge_flows": edge_flows,
+        "metrics": metrics,
+    }
+
+
+def _reference_solve_optimized(instance: dict) -> dict:
+    """Congestion-aware iterative rerouting solver as described in Contract Section 14."""
+    G = _build_reference_grid_graph()
+    # Initialize baseline routes
+    current_routes = []
+    for trip in instance["trips"]:
+        orig = tuple(trip["origin"])
+        dest = tuple(trip["destination"])
+        path = nx.shortest_path(G, source=orig, target=dest)
+        current_routes.append({
+            "trip_id": trip["id"],
+            "path": [[x, y] for x, y in path],
+        })
+
+    # Iterative rerouting (5 iterations)
+    for _ in range(5):
+        edge_flows: Dict[Tuple[Tuple[int, int], Tuple[int, int]], int] = {}
+        for r in current_routes:
+            p = r["path"]
+            for i in range(len(p) - 1):
+                u, v = tuple(p[i]), tuple(p[i + 1])
+                e = tuple(sorted([u, v]))
+                edge_flows[e] = edge_flows.get(e, 0) + 1
+
+        # Set dynamic edge weights
+        for u, v in G.edges():
+            e = tuple(sorted([u, v]))
+            flow = edge_flows.get(e, 0)
+            G[u][v]["weight"] = compute_edge_travel_time(flow)
+
+        # Reroute trips on weighted graph
+        new_routes = []
+        for trip in instance["trips"]:
+            orig = tuple(trip["origin"])
+            dest = tuple(trip["destination"])
+            path = nx.shortest_path(G, source=orig, target=dest, weight="weight")
+            new_routes.append({
+                "trip_id": trip["id"],
+                "path": [[x, y] for x, y in path],
+            })
+        current_routes = new_routes
+
+    edge_flows_str, final_routes = _compute_flows_and_travel_times(current_routes)
+    metrics = fallback_calculate_metrics(final_routes, edge_flows_str)
+    return {
+        "routes": final_routes,
+        "edge_flows": edge_flows_str,
+        "metrics": metrics,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Public Adapter Functions
+# ---------------------------------------------------------------------------
+
+def get_instance(seed: int = 42) -> dict:
+    """Get instance from Person 3's optimizer or reference implementation."""
+    if _real_optimizer and hasattr(_real_optimizer, "build_instance"):
+        return _real_optimizer.build_instance(seed)
+    return _reference_build_instance(seed)
+
+
+def run_baseline(instance: dict) -> dict:
+    """Run baseline solver via Person 3's optimizer or reference implementation."""
+    if _real_optimizer and hasattr(_real_optimizer, "solve_baseline"):
+        return _real_optimizer.solve_baseline(instance)
+    return _reference_solve_baseline(instance)
+
+
+def run_optimized(instance: dict) -> dict:
+    """Run optimized solver via Person 3's optimizer or reference implementation."""
+    if _real_optimizer and hasattr(_real_optimizer, "solve_optimized"):
+        return _real_optimizer.solve_optimized(instance)
+    return _reference_solve_optimized(instance)
+
+
+def run_calculate_metrics(routes: list, edge_flows: dict) -> dict:
+    """Run metrics calculation via Person 3's optimizer or reference implementation."""
+    if _real_optimizer and hasattr(_real_optimizer, "calculate_metrics"):
+        return _real_optimizer.calculate_metrics(routes, edge_flows)
+    return fallback_calculate_metrics(routes, edge_flows)
