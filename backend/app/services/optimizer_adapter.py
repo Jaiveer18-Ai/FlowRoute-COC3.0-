@@ -234,7 +234,25 @@ def run_baseline(instance: dict) -> dict:
     """Run baseline solver via Person 3's optimizer or reference implementation."""
     fn = _find_optimizer_callable("solve_baseline", ["baseline"])
     if fn:
-        return fn(instance)
+        res = fn(instance)
+        routes = res.get("routes", [])
+        edge_flows = res.get("edge_flows", {})
+        metrics = res.get("metrics", {})
+        if (
+            not edge_flows
+            or not metrics
+            or any("_" in k for k in edge_flows.keys())
+            or any("travel_time" not in r for r in routes)
+            or not all(m in metrics for m in ("mean_travel_time", "p95_travel_time", "max_congestion_ratio"))
+        ):
+            computed_flows, final_routes = _compute_flows_and_travel_times(routes)
+            computed_metrics = fallback_calculate_metrics(final_routes, computed_flows)
+            return {
+                "routes": final_routes,
+                "edge_flows": computed_flows,
+                "metrics": computed_metrics,
+            }
+        return res
     return _reference_solve_baseline(instance)
 
 
@@ -242,7 +260,25 @@ def run_optimized(instance: dict) -> dict:
     """Run optimized solver via Person 3's optimizer or reference implementation."""
     fn = _find_optimizer_callable("solve_optimized", ["optimize"])
     if fn:
-        return fn(instance)
+        res = fn(instance)
+        routes = res.get("routes", [])
+        edge_flows = res.get("edge_flows", {})
+        metrics = res.get("metrics", {})
+        if (
+            not edge_flows
+            or not metrics
+            or any("_" in k for k in edge_flows.keys())
+            or any("travel_time" not in r for r in routes)
+            or not all(m in metrics for m in ("mean_travel_time", "p95_travel_time", "max_congestion_ratio"))
+        ):
+            computed_flows, final_routes = _compute_flows_and_travel_times(routes)
+            computed_metrics = fallback_calculate_metrics(final_routes, computed_flows)
+            return {
+                "routes": final_routes,
+                "edge_flows": computed_flows,
+                "metrics": computed_metrics,
+            }
+        return res
     return _reference_solve_optimized(instance)
 
 
