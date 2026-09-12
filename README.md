@@ -1,76 +1,135 @@
-# FlowRoute AI — AI-02 Transit Rerouting
+# AI-02 — System-Optimal Transit Rerouting After a Network Disruption
 
-**FlowRoute** is a system-optimal transit rerouting platform designed for **AI-02: System-Optimal Transit Rerouting After a Network Disruption**.
+## Problem Overview
+This project tackles a deterministic transit rerouting problem on a bidirectional grid network experiencing localized disruption. The challenge involves routing exactly 120 trips across a 5x5 grid where a critical segment has been removed. The goal is to optimize the route assignments system-wide to minimize the total travel time, navigating the balance between individual trip length and shared road capacity limitations under a non-linear congestion model.
 
-This repository follows the architectural specification defined in [`Contract.md`](./Contract.md).
+## Official Instance
+The core environment properties are strictly defined:
+- **Grid Layout:** 5x5 bidirectional grid.
+- **Nodes:** 25 nodes, where node ID is calculated as `5y + x`.
+- **Edges (Roads):** Bidirectional, mapped distinctly per direction.
+- **Free-Flow Time (`t0`):** 1.
+- **Capacity (`c`):** 8.
+- **Disrupted Edge:** The bidirectional link between `(2,2)` and `(3,2)` is completely removed.
+- **Trips:** 120 unique trips.
+- **Determinism:** Seed `20260911` guarantees stable trip generation.
+- **Distance Constraint:** Undisrupted shortest-path distance for any trip is `>= 4` edges.
 
----
+## Technology Stack
+- **Python:** The core implementation language prioritizing readability and functional purity.
+- **NumPy PCG64:** Powers the deterministic instance generator and ensures stable trip pairings under the official seed.
+- **NetworkX:** Leveraged for deterministic graph representations and reliable weighted shortest path routing.
+- **Matplotlib:** Used strictly for generating output edge-flow visualizations of the optimized network.
+- **unittest / pytest:** Employs a robust suite of 36 unit tests validating all rules from graph integrity up to determinism and optimization correctness.
 
-## 1. Architecture Overview
+## Architecture / Milestones
+The project is split into 5 core milestones (M1–M5), each building functionally on the previous:
+- **M1 (Graph):** Grid creation, directional edge assignment, and application of the disrupted edge.
+- **M2 (Trips):** Official deterministic generation of the 120 trips.
+- **M3 (Baseline):** A naive selfish shortest-path routing algorithm that simply avoids the disrupted edge.
+- **M4 (Evaluation):** System-wide evaluator that calculates resulting edge flows and assigns congestion penalties based on the official formula.
+- **M5 (Optimizer):** The primary optimization solver that intelligently reroutes traffic away from bottlenecked edges to achieve a better overall system time.
 
-FlowRoute consists of three decoupled components:
-1. **Frontend (`frontend/`)**: React + Vite + Tailwind dashboard (Person 1).
-2. **Backend (`backend/`)**: FastAPI orchestration and REST API gateway (Person 2 - Dhruv).
-3. **Optimizer (`optimizer/`)**: NetworkX graph modeling, trip generation, and congestion-aware routing (Person 3).
+## Baseline Routing
+Ordinary user-optimal shortest-path routing calculates the fastest path for each trip independently in a vacuum. Under severe network disruption, this naturally causes severe system-wide congestion. Everyone instinctively routes around the disruption via the immediately adjacent parallel edges, causing massive traffic spikes where flow far exceeds edge capacity.
 
----
+## Congestion Model
+The official benchmark evaluates road segment travel time using a polynomial congestion model:
 
-## 2. Backend Installation
+`t = t0 * (1 + 0.15 * (f/c)^4)`
 
-Requirements: Python 3.11+
+Where:
+- `t0` = Free-flow travel time (always 1).
+- `f` = Directional flow (number of trips utilizing this exact directed edge).
+- `c` = Capacity (always 8).
+- `f/c` = Congestion ratio.
 
-```bash
-# Install backend dependencies
-pip install -r backend/requirements.txt
+## Marginal-Cost Optimization
+The M5 approach utilizes a bounded greedy heuristic based on system-oriented marginal cost.
+
+Instead of navigating by base travel time `t(f)`, candidate paths are discovered by calculating the marginal social cost of an edge:
+`MC(f) = (f+1)t(f+1) - f t(f)`
+
+This metric accurately estimates the **additional system-wide cost** (total time) imposed by assigning one additional trip to that edge.
+
+**Optimization Flow:**
+1. A trip is selected, and its current flow is temporarily removed.
+2. System marginal edge costs are calculated based on all *other* trips.
+3. The absolute shortest candidate route is generated over this marginal cost network.
+4. If a different route is found, the **entire route assignment** is fully evaluated through M4.
+5. The new route is accepted strictly if the total system travel time improves (`< current - 1e-12`).
+6. Equal path ties are broken deterministically using lexicographical sorting.
+7. The process sweeps across all 120 trips up to a maximum of 5 passes, immediately halting if a full pass returns zero improvements.
+
+## Important Algorithm Qualification
+The optimizer is explicitly a **deterministic greedy marginal-cost system-oriented rerouting heuristic**. While it dramatically reduces system-wide congestion, it does not claim a mathematical guarantee of global optimality.
+
+## Determinism / Reproducibility
+Determinism is strictly preserved across the entire pipeline. Utilizing NumPy's PCG64 random generator with the official seed `20260911` guarantees identical instance creation. During optimization, graph traversal order and tie-breaking mechanics are bounded and ordered lexicographically, guaranteeing identical optimized results upon every execution on any machine.
+
+## Results
+A comparison of the naive baseline (M3) versus the optimized assignment (M5) over the official instance:
+
+| Metric | Baseline (User-Optimal) | Optimized (System-Optimal) |
+| --- | --- | --- |
+| **Total System Travel Time** | 1464.00 | 726.73212890625 |
+| **Mean Travel Time** | 12.20 | 6.056101074218749 |
+| **P95 Travel Time** | 27.41 | 7.7010498046875 |
+| **Max Congestion Ratio** | 2.75 | 1.625 |
+
+**System Improvement:** 50.36%  
+**Runtime:** ~2.1 seconds
+
+## Output Artifacts
+Executing the pipeline generates two machine-readable/visual deliverables:
+- `outputs/ai02_result.json`: The raw evaluation data including all 120 paths in order, edge flows, travel times, and system metrics.
+- `outputs/ai02_edge_flows.png`: A high-quality NetworkX + Matplotlib grid visualization where active road line width is visually proportional to optimized traffic load. The disrupted edge is clearly highlighted.
+
+## How to Run
+From the repository root:
+1. Generate the optimization JSON output:
+   `python scripts/run_ai02.py`
+2. Generate the edge-flow visual map:
+   `python scripts/visualize_flows.py`
+
+To run the robust test suite encompassing M1–M5:
+`python -m unittest discover tests`
+*(Alternatively, `pytest` if installed)*
+
+## Testing
+The current test suite contains **36 passing tests** based on the latest verified run. It validates everything from the graph configuration and metric accuracy up to script execution environments.
+
+## Repository Structure
+```text
+├── optimizer/
+│   ├── __init__.py
+│   ├── baseline.py
+│   ├── graph.py
+│   ├── metrics.py
+│   ├── optimizer.py
+│   └── trips.py
+├── scripts/
+│   ├── run_ai02.py
+│   └── visualize_flows.py
+├── tests/
+│   ├── __init__.py
+│   ├── test_baseline.py
+│   ├── test_graph.py
+│   ├── test_metrics.py
+│   ├── test_optimizer.py
+│   ├── test_run_ai02.py
+│   ├── test_trips.py
+│   └── test_visualize_flows.py
+├── outputs/
+│   ├── ai02_result.json
+│   └── ai02_edge_flows.png
+├── Contract.md
+└── README.md
 ```
 
----
+## Limitations / Future Work
+- The algorithm is a greedy bounded heuristic. Due to its iterative localized nature, it is not a proof of global optimum. 
+- While entirely appropriate and incredibly fast for this 25-node / 120-trip benchmark scale, massively larger networks may require more scalable linear-programming/flow algorithms rather than iterative pathfinding.
 
-## 3. Starting the Backend Server
-
-```bash
-uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-The API will be available at `http://localhost:8000`. Interactive OpenAPI documentation is accessible at `http://localhost:8000/docs`.
-
----
-
-## 4. API Endpoints
-
-All endpoints and schemas strictly comply with `Contract.md`.
-
-| Method | Endpoint | Description | Request Body | Response Body |
-|---|---|---|---|---|
-| `GET` | `/health` | Health check | *None* | `{"status": "ok"}` |
-| `POST` | `/api/instance` | Generate network instance | `{"seed": 42}` (optional) | `{ seed, nodes, edges, trips }` |
-| `POST` | `/api/baseline` | Solve baseline shortest paths | `{"seed": 42}` (optional) | `{ baseline: { routes, edge_flows, metrics } }` |
-| `POST` | `/api/optimize` | Solve congestion-aware routing | `{"seed": 42}` (optional) | `{ optimized: { routes, edge_flows, metrics } }` |
-| `POST` | `/api/compare` | Primary frontend comparison endpoint | `{"seed": 42}` (optional) | `{ seed, baseline: {...}, optimized: {...} }` |
-
-### Error Responses
-All errors return standard HTTP status codes with a consistent JSON envelope:
-```json
-{
-  "detail": "Error description message"
-}
-```
-
----
-
-## 5. Running Tests
-
-Run the full automated test suite using `pytest`:
-
-```bash
-pytest
-```
-
-Tests verify:
-- API endpoint status codes and response schemas
-- Deterministic behavior across runs with fixed seed
-- Enforcement of network disruption `(2,2) <-> (3,2)` (routes strictly avoid this edge)
-- Rejection of invalid routes (loops, non-adjacent hops, wrong origin/destination)
-- Canonical edge ID sorting (`"x1,y1-x2,y2"`)
-- Correctness of the BPR congestion formula $t_e = 1 + 0.15 \times (f_e / 8)^4$ and 95th percentile metrics
-- CORS preflight headers for `http://localhost:5173`
+## Submission Summary
+This repository contains the required core routing source (`optimizer/`), the deterministic generation and execution scripts (`scripts/`), the final metrics alongside exactly 120 mapped trips (`outputs/ai02_result.json`), and the visual edge-flow map (`outputs/ai02_edge_flows.png`). A suite of 36 unit tests verifies functionality, fully satisfying the AI-02 project deliverables.
