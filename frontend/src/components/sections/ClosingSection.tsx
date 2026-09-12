@@ -76,15 +76,13 @@ const ClosingSection: React.FC = () => {
             }}
             data-cursor="button"
             data-cursor-label="SIMULATE"
-            className="btn-instrument btn-instrument-primary"
+            className="btn-primary-pill"
             style={{
               height: '48px',
-              padding: '0 40px',
-              fontSize: 'var(--text-small)',
-              letterSpacing: 'var(--tracking-wide)',
+              padding: '0 36px',
             }}
           >
-            Run Simulation
+            Run Simulation →
           </MagneticButton>
         </motion.div>
 

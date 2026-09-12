@@ -22,7 +22,8 @@ const NetworkNode: React.FC<Props> = ({
 }) => {
   const pos = useMemo(() => gridToPixel(x, y, size, padding), [x, y, size, padding]);
 
-  const baseRadius = Math.max(4, size / (GRID_SIZE * 8));
+  // Radius tailored for light cartographic layout
+  const baseRadius = Math.max(5, size / (GRID_SIZE * 9));
 
   return (
     <g
@@ -37,63 +38,40 @@ const NetworkNode: React.FC<Props> = ({
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter') onClick?.([x, y]); }}
     >
-      {/* Pulse ring for active/highlighted nodes */}
+      {/* Blue aura halo for selected / active node */}
       {(isActive || isHighlighted) && (
         <motion.circle
           cx={pos.px}
           cy={pos.py}
-          r={baseRadius * 3}
-          fill="none"
-          stroke={isHighlighted ? 'var(--color-accent-bright)' : 'var(--color-text-muted)'}
-          strokeWidth={1}
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: [0.4, 0], scale: [0.8, 1.5] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeOut' }}
+          r={baseRadius * 2.8}
+          fill="rgba(22, 119, 255, 0.22)"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.3 }}
         />
       )}
 
-      {/* Glow */}
-      {isHighlighted && (
-        <circle
-          cx={pos.px}
-          cy={pos.py}
-          r={baseRadius * 2.5}
-          fill="var(--color-accent-glow)"
-          opacity={0.5}
-        />
-      )}
-
-      {/* Outer ring */}
+      {/* Main node circle: white with outline or solid blue when selected */}
       <motion.circle
         cx={pos.px}
         cy={pos.py}
         r={baseRadius * 1.6}
-        fill="none"
-        stroke={isHighlighted ? 'var(--color-accent)' : 'var(--color-border)'}
-        strokeWidth={1}
-        whileHover={{ stroke: 'var(--color-accent)', strokeWidth: 1.5 }}
-        transition={{ duration: 0.2 }}
-      />
-
-      {/* Core dot */}
-      <motion.circle
-        cx={pos.px}
-        cy={pos.py}
-        r={baseRadius}
-        fill={isHighlighted ? 'var(--color-accent-bright)' : 'var(--color-text-primary)'}
-        whileHover={{ scale: 1.3, fill: 'var(--color-accent-bright)' }}
+        fill={isActive || isHighlighted ? '#1677FF' : '#FFFFFF'}
+        stroke={isActive || isHighlighted ? '#1677FF' : '#94A3B8'}
+        strokeWidth={2}
+        whileHover={{ scale: 1.25, stroke: '#1677FF' }}
         transition={{ duration: 0.15 }}
       />
 
-      {/* Coordinate label */}
+      {/* Coordinate label directly above each node */}
       <text
         x={pos.px}
-        y={pos.py - baseRadius * 2.8}
+        y={pos.py - baseRadius * 2.3}
         textAnchor="middle"
-        fill="var(--color-text-muted)"
-        fontSize={Math.max(8, size / 50)}
+        fill="#64748B"
+        fontSize={Math.max(9, Math.round(size / 48))}
         fontFamily="var(--font-mono)"
-        opacity={isHighlighted ? 1 : 0.5}
+        fontWeight="500"
         style={{ pointerEvents: 'none', userSelect: 'none' }}
       >
         {x},{y}

@@ -75,9 +75,10 @@ const RouteInspector: React.FC<Props> = ({
           >
             <div style={{
               padding: 'var(--space-5)',
-              background: 'var(--color-bg-surface)',
-              border: '1px solid var(--color-border)',
+              background: '#FFFFFF',
+              border: '1px solid #E2E8F0',
               borderRadius: 'var(--radius-md)',
+              boxShadow: 'var(--shadow-card)',
             }}>
               <div style={{
                 display: 'grid',
@@ -90,8 +91,8 @@ const RouteInspector: React.FC<Props> = ({
                   <div style={{
                     fontFamily: 'var(--font-mono)',
                     fontSize: 'var(--text-body)',
-                    fontWeight: 600,
-                    color: 'var(--color-text-primary)',
+                    fontWeight: 700,
+                    color: 'var(--color-accent)',
                   }}>
                     #{String(selectedRoute.trip_id).padStart(3, '0')}
                   </div>
@@ -121,8 +122,8 @@ const RouteInspector: React.FC<Props> = ({
                   <div style={{
                     fontFamily: 'var(--font-mono)',
                     fontSize: 'var(--text-body)',
-                    fontWeight: 600,
-                    color: routeType === 'optimized' ? 'var(--color-accent-bright)' : 'var(--color-warning)',
+                    fontWeight: 700,
+                    color: routeType === 'optimized' ? 'var(--color-accent)' : '#D97706',
                   }}>
                     {selectedRoute.travel_time.toFixed(2)}
                   </div>
@@ -147,20 +148,23 @@ const RouteInspector: React.FC<Props> = ({
                 display: 'flex',
                 flexWrap: 'wrap',
                 alignItems: 'center',
-                gap: '4px',
+                gap: '6px',
               }}>
                 {selectedRoute.path.map((node, i) => (
                   <React.Fragment key={i}>
                     <span style={{
-                      padding: '2px 6px',
-                      background: 'var(--color-bg)',
+                      padding: '3px 8px',
+                      background: '#F1F5F9',
+                      border: '1px solid #E2E8F0',
                       borderRadius: 'var(--radius-sm)',
                       fontSize: '11px',
+                      fontWeight: 500,
+                      color: 'var(--color-text-primary)',
                     }}>
                       {node[0]},{node[1]}
                     </span>
                     {i < selectedRoute.path.length - 1 && (
-                      <span style={{ color: 'var(--color-text-muted)', fontSize: '10px' }}>→</span>
+                      <span style={{ color: 'var(--color-accent)', fontSize: '11px' }}>→</span>
                     )}
                   </React.Fragment>
                 ))}
@@ -173,38 +177,43 @@ const RouteInspector: React.FC<Props> = ({
       {/* Trip list */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(64px, 1fr))',
-        gap: '4px',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(68px, 1fr))',
+        gap: '6px',
       }}>
-        {visibleRoutes.map((route) => (
-          <button
-            key={route.trip_id}
-            onClick={() => onSelectTrip(route.trip_id === selectedTripId ? null : route.trip_id)}
-            data-cursor="route"
-            data-cursor-label="TRACE"
-            style={{
-              padding: '6px 4px',
-              background: route.trip_id === selectedTripId
-                ? (routeType === 'optimized' ? 'var(--color-accent-glow)' : 'rgba(245,158,11,0.1)')
-                : 'var(--color-bg-surface)',
-              border: `1px solid ${
-                route.trip_id === selectedTripId
-                  ? (routeType === 'optimized' ? 'var(--color-accent)' : 'var(--color-warning)')
-                  : 'var(--color-border)'
-              }`,
-              borderRadius: 'var(--radius-xs)',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '11px',
-              color: route.trip_id === selectedTripId
-                ? 'var(--color-text-primary)'
-                : 'var(--color-text-muted)',
-              transition: 'all 0.15s ease',
-              textAlign: 'center',
-            }}
-          >
-            {String(route.trip_id).padStart(3, '0')}
-          </button>
-        ))}
+        {visibleRoutes.map((route) => {
+          const isSelected = route.trip_id === selectedTripId;
+          return (
+            <button
+              key={route.trip_id}
+              onClick={() => onSelectTrip(isSelected ? null : route.trip_id)}
+              data-cursor="route"
+              data-cursor-label="TRACE"
+              style={{
+                padding: '7px 4px',
+                background: isSelected
+                  ? (routeType === 'optimized' ? 'rgba(22, 119, 255, 0.12)' : 'rgba(245, 158, 11, 0.15)')
+                  : '#FFFFFF',
+                border: `1px solid ${
+                  isSelected
+                    ? (routeType === 'optimized' ? 'var(--color-accent)' : '#D97706')
+                    : '#E2E8F0'
+                }`,
+                borderRadius: 'var(--radius-xs)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '11px',
+                fontWeight: isSelected ? 700 : 500,
+                color: isSelected
+                  ? (routeType === 'optimized' ? 'var(--color-accent)' : '#D97706')
+                  : 'var(--color-text-secondary)',
+                boxShadow: isSelected ? '0 2px 8px rgba(22, 119, 255, 0.15)' : 'none',
+                transition: 'all 0.15s ease',
+                textAlign: 'center',
+              }}
+            >
+              {String(route.trip_id).padStart(3, '0')}
+            </button>
+          );
+        })}
       </div>
 
       {routes.length > 20 && (
@@ -212,15 +221,17 @@ const RouteInspector: React.FC<Props> = ({
           onClick={() => setShowAll(!showAll)}
           data-cursor="button"
           style={{
-            marginTop: 'var(--space-3)',
+            marginTop: 'var(--space-4)',
             fontFamily: 'var(--font-mono)',
             fontSize: 'var(--text-meta)',
             letterSpacing: 'var(--tracking-wider)',
             textTransform: 'uppercase',
-            color: 'var(--color-text-muted)',
+            color: 'var(--color-accent)',
             padding: '6px 16px',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-xs)',
+            background: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+            borderRadius: 'var(--radius-pill)',
+            boxShadow: 'var(--shadow-sm)',
             transition: 'all 0.2s ease',
           }}
         >

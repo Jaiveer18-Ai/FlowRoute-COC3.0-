@@ -16,14 +16,14 @@ const NAV_ITEMS: NavItem[] = [
 
 const FloatingNav: React.FC = () => {
   const [activeSection, setActiveSection] = useState('hero');
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [, setIsScrolled] = useState(false);
   const isClickScrollingRef = useRef(false);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Track active section and scroll state
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 80);
+      setIsScrolled(window.scrollY > 40);
 
       // Don't override active section while user-initiated smooth scroll is in progress
       if (isClickScrollingRef.current) return;
@@ -56,7 +56,6 @@ const FloatingNav: React.FC = () => {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    // Run once on mount to set initial section
     handleScroll();
 
     return () => {
@@ -66,23 +65,19 @@ const FloatingNav: React.FC = () => {
   }, []);
 
   const scrollTo = useCallback((id: string) => {
-    // 1. Immediately update active state so the pill smoothly slides right away
     setActiveSection(id);
-
-    // 2. Lock scroll listener temporarily so passing sections don't bounce the pill
     isClickScrollingRef.current = true;
     if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     scrollTimeoutRef.current = setTimeout(() => {
       isClickScrollingRef.current = false;
     }, 850);
 
-    // 3. Smooth scroll with top offset compensation for the fixed floating navbar
     const el = document.getElementById(id);
     if (el) {
       if (id === 'hero') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        const navOffset = 60;
+        const navOffset = 80;
         const targetY = el.getBoundingClientRect().top + window.pageYOffset - navOffset;
         window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
       }
@@ -90,105 +85,161 @@ const FloatingNav: React.FC = () => {
   }, []);
 
   return (
-    <motion.nav
+    <motion.header
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      aria-label="Primary navigation"
-      className="floating-nav-container"
+      transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      className="top-nav-header"
       style={{
         position: 'fixed',
-        top: 'var(--space-6)',
+        top: 0,
+        left: 0,
+        right: 0,
         zIndex: 'var(--z-nav)',
+        padding: '16px var(--space-8)',
         display: 'flex',
         alignItems: 'center',
-        gap: '4px',
-        padding: '6px 8px',
-        background: isScrolled ? 'rgba(11, 15, 25, 0.92)' : 'rgba(13, 18, 30, 0.78)',
-        backdropFilter: 'blur(24px) saturate(1.7)',
-        WebkitBackdropFilter: 'blur(24px) saturate(1.7)',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
-        borderRadius: 'var(--radius-pill)',
-        boxShadow: isScrolled
-          ? '0 16px 40px rgba(0, 0, 0, 0.65), 0 0 24px rgba(56, 189, 248, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.14)'
-          : '0 10px 30px rgba(0, 0, 0, 0.45), 0 0 16px rgba(56, 189, 248, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-        transition: 'all 0.3s ease',
-        maxWidth: 'calc(100vw - 32px)',
+        justifyContent: 'space-between',
+        pointerEvents: 'none',
       }}
     >
-      {NAV_ITEMS.map(({ id, label }) => {
-        const isActive = activeSection === id;
-        return (
-          <button
-            key={id}
-            onClick={() => scrollTo(id)}
-            aria-current={isActive ? 'true' : undefined}
+      {/* Top-Left Brand Anchor */}
+      <div
+        onClick={() => scrollTo('hero')}
+        style={{
+          pointerEvents: 'auto',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          cursor: 'pointer',
+        }}
+      >
+        {/* 3x3 Dot Grid Matrix */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 5px)',
+            gap: '3px',
+          }}
+        >
+          {[...Array(9)].map((_, i) => (
+            <span
+              key={i}
+              style={{
+                width: 5,
+                height: 5,
+                borderRadius: '50%',
+                backgroundColor: '#1677FF',
+              }}
+            />
+          ))}
+        </div>
+
+        <div>
+          <span
             style={{
-              position: 'relative',
-              padding: '10px 22px',
-              borderRadius: 'var(--radius-pill)',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.8125rem',
-              fontWeight: isActive ? 600 : 500,
-              letterSpacing: '0.09em',
+              display: 'block',
+              fontFamily: 'var(--font-sans)',
+              fontSize: '15px',
+              fontWeight: 800,
+              letterSpacing: '0.12em',
               textTransform: 'uppercase',
-              color: isActive ? '#ffffff' : 'rgba(226, 232, 240, 0.75)',
-              textShadow: isActive ? '0 0 10px rgba(56, 189, 248, 0.5)' : 'none',
-              background: 'none',
-              border: 'none',
-              transition: 'color 0.2s ease, text-shadow 0.2s ease',
-              zIndex: 1,
-              whiteSpace: 'nowrap',
-              cursor: 'pointer',
+              color: '#0F172A',
+              lineHeight: 1.1,
             }}
           >
-            {isActive && (
-              <motion.span
-                layoutId="nav-pill"
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  borderRadius: 'var(--radius-pill)',
-                  background: 'linear-gradient(135deg, #1d4ed8 0%, #0284c7 100%)',
-                  border: '1px solid rgba(56, 189, 248, 0.75)',
-                  boxShadow: '0 4px 20px rgba(2, 132, 199, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
-                  zIndex: -1,
-                }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 420,
-                  damping: 32,
-                }}
-              />
-            )}
-            {label}
-          </button>
-        );
-      })}
+            FLOWROUTE
+          </span>
+        </div>
+      </div>
+
+      {/* Top-Right Floating Pill Navigation */}
+      <nav
+        style={{
+          pointerEvents: 'auto',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '3px',
+          padding: '4px',
+          background: 'rgba(255, 255, 255, 0.92)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid #E2E8F0',
+          borderRadius: '9999px',
+          boxShadow: '0 4px 20px rgba(15, 23, 42, 0.06)',
+          maxWidth: 'calc(100vw - 32px)',
+        }}
+      >
+        {NAV_ITEMS.map(({ id, label }) => {
+          const isActive = activeSection === id;
+          return (
+            <button
+              key={id}
+              onClick={() => scrollTo(id)}
+              aria-current={isActive ? 'true' : undefined}
+              style={{
+                position: 'relative',
+                padding: '8px 20px',
+                borderRadius: '9999px',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: isActive ? '#FFFFFF' : '#475569',
+                background: 'none',
+                border: 'none',
+                transition: 'color 0.2s ease',
+                zIndex: 1,
+                whiteSpace: 'nowrap',
+                cursor: 'pointer',
+              }}
+            >
+              {isActive && (
+                <motion.span
+                  layoutId="nav-pill"
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: '9999px',
+                    background: '#1677FF',
+                    boxShadow: '0 4px 14px rgba(22, 119, 255, 0.35)',
+                    zIndex: -1,
+                  }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 450,
+                    damping: 34,
+                  }}
+                />
+              )}
+              {label}
+            </button>
+          );
+        })}
+      </nav>
 
       <style>{`
-        .floating-nav-container {
-          right: 36px;
-          left: auto;
-          transform: none;
-        }
         @media (max-width: 860px) {
-          .floating-nav-container {
-            left: 50% !important;
-            right: auto !important;
-            transform: translateX(-50%) !important;
-            width: calc(100% - 24px);
-            justify-content: space-between;
-            overflow-x: auto;
-            padding: 4px 6px !important;
+          .top-nav-header {
+            flex-direction: column;
+            gap: 12px;
+            padding: 12px 16px !important;
+            background: rgba(247, 249, 252, 0.95);
+            backdrop-filter: blur(16px);
           }
-          .floating-nav-container button {
-            padding: 8px 14px !important;
-            font-size: 0.75rem !important;
+          .top-nav-header nav {
+            overflow-x: auto;
+            width: 100%;
+            justify-content: space-between;
+          }
+          .top-nav-header nav button {
+            padding: 6px 12px !important;
+            font-size: 0.6875rem !important;
           }
         }
       `}</style>
-    </motion.nav>
+    </motion.header>
   );
 };
 

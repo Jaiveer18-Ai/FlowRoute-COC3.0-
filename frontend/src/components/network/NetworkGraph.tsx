@@ -14,6 +14,8 @@ interface Props {
   showParticles?: boolean;
   showDisruption?: boolean;
   interactive?: boolean;
+  selectedNode?: [number, number] | null;
+  onSelectNode?: (node: [number, number] | null) => void;
   className?: string;
   style?: React.CSSProperties;
   onSelectTrip?: (tripId: number) => void;
@@ -28,6 +30,8 @@ const NetworkGraph: React.FC<Props> = ({
   showParticles = true,
   showDisruption = true,
   interactive = true,
+  selectedNode = null,
+  onSelectNode,
   className,
   style,
   onSelectTrip,
@@ -114,7 +118,7 @@ const NetworkGraph: React.FC<Props> = ({
               size={size}
               padding={padding}
               flow={flow}
-              disrupted={showDisruption ? e.disrupted : false}
+              isDisrupted={showDisruption ? e.disrupted : false}
               isRoute={isInRoute}
               routeType={routeType}
               showParticles={showParticles && flow > 0}
@@ -154,30 +158,36 @@ const NetworkGraph: React.FC<Props> = ({
         })}
 
         {/* Nodes — rendered on top */}
-        {nodes.map(({ x, y }) => (
-          <NetworkNode
-            key={`${x}-${y}`}
-            x={x}
-            y={y}
-            size={size}
-            padding={padding}
-            isHighlighted={
-              hoveredNode !== null &&
-              hoveredNode[0] === x &&
-              hoveredNode[1] === y
-            }
-            isActive={
-              connectedEdges.size > 0 &&
-              edges.some(
-                (e) =>
-                  connectedEdges.has(canonicalEdgeId(e.from, e.to)) &&
-                  ((e.from[0] === x && e.from[1] === y) ||
-                    (e.to[0] === x && e.to[1] === y))
-              )
-            }
-            onHover={handleNodeHover}
-          />
-        ))}
+        {nodes.map(({ x, y }) => {
+          const isNodeSelected = selectedNode !== null && selectedNode !== undefined && selectedNode[0] === x && selectedNode[1] === y;
+          return (
+            <NetworkNode
+              key={`${x}-${y}`}
+              x={x}
+              y={y}
+              size={size}
+              padding={padding}
+              isHighlighted={
+                isNodeSelected ||
+                (hoveredNode !== null &&
+                hoveredNode[0] === x &&
+                hoveredNode[1] === y)
+              }
+              isActive={
+                isNodeSelected ||
+                (connectedEdges.size > 0 &&
+                edges.some(
+                  (e) =>
+                    connectedEdges.has(canonicalEdgeId(e.from, e.to)) &&
+                    ((e.from[0] === x && e.from[1] === y) ||
+                      (e.to[0] === x && e.to[1] === y))
+                ))
+              }
+              onHover={handleNodeHover}
+              onClick={(node) => onSelectNode?.(isNodeSelected ? null : node)}
+            />
+          );
+        })}
       </svg>
 
       {/* Tooltip for hovered edge */}

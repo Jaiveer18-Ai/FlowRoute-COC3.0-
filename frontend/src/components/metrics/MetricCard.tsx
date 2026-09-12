@@ -57,11 +57,9 @@ const MetricCard: React.FC<MetricCardProps> = ({
       initial={{ opacity: 0, y: 30 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
+      className="card-floating"
       style={{
         padding: 'var(--space-8)',
-        background: 'var(--color-bg-elevated)',
-        border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-lg)',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -73,27 +71,10 @@ const MetricCard: React.FC<MetricCardProps> = ({
           top: 0,
           left: 0,
           right: 0,
-          height: 2,
+          height: 3,
           background: improvement !== null && improvementIsPositive
-            ? 'var(--color-healthy)'
-            : 'var(--color-accent)',
-          opacity: 0.6,
-        }}
-      />
-
-      {/* Animated Luminous Shimmer Light Beam */}
-      <motion.div
-        animate={{ x: ['-100%', '200%'] }}
-        transition={{ duration: 4, repeat: Infinity, ease: 'linear', delay: delay * 1.5 }}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '50%',
-          height: 2,
-          background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, transparent 100%)',
-          zIndex: 2,
-          pointerEvents: 'none',
+            ? 'var(--color-accent)'
+            : '#E2E8F0',
         }}
       />
 
@@ -164,8 +145,12 @@ const MetricCard: React.FC<MetricCardProps> = ({
                     style={{
                       fontFamily: 'var(--font-mono)',
                       fontSize: 'var(--text-xs)',
-                      fontWeight: 600,
-                      color: improvementIsPositive ? 'var(--color-healthy)' : 'var(--color-danger)',
+                      fontWeight: 700,
+                      color: improvementIsPositive ? '#059669' : '#DC2626',
+                      background: improvementIsPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 51, 64, 0.1)',
+                      border: `1px solid ${improvementIsPositive ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 51, 64, 0.25)'}`,
+                      borderRadius: 'var(--radius-pill)',
+                      padding: '2px 8px',
                       whiteSpace: 'nowrap',
                     }}
                   >
@@ -185,7 +170,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
                     fontSize: 'var(--text-h2)',
                     fontWeight: 700,
                     color: improvementIsPositive
-                      ? 'var(--color-healthy)'
+                      ? 'var(--color-accent)'
                       : 'var(--color-text-primary)',
                     lineHeight: 1,
                   }}

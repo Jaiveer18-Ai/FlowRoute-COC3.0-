@@ -125,34 +125,41 @@ const SimulationSection: React.FC<Props> = ({
               }}>
                 <div style={{
                   display: 'flex',
-                  gap: '2px',
-                  padding: '3px',
-                  background: 'var(--color-bg-surface)',
+                  gap: '4px',
+                  padding: '4px',
+                  background: '#FFFFFF',
                   borderRadius: 'var(--radius-pill)',
-                  border: '1px solid var(--color-border)',
+                  border: '1px solid #E2E8F0',
+                  boxShadow: 'var(--shadow-sm)',
                 }}>
-                  {(['baseline', 'optimized'] as const).map((mode) => (
-                    <button
-                      key={mode}
-                      onClick={() => setViewMode(mode)}
-                      data-cursor="button"
-                      style={{
-                        padding: '8px 24px',
-                        borderRadius: 'var(--radius-pill)',
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: 'var(--text-meta)',
-                        fontWeight: 500,
-                        letterSpacing: 'var(--tracking-wider)',
-                        textTransform: 'uppercase',
-                        color: viewMode === mode ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
-                        background: viewMode === mode ? 'var(--color-bg-hover)' : 'transparent',
-                        transition: 'all 0.2s ease',
-                        position: 'relative',
-                      }}
-                    >
-                      {mode}
-                    </button>
-                  ))}
+                  {(['baseline', 'optimized'] as const).map((mode) => {
+                    const isActive = viewMode === mode;
+                    return (
+                      <button
+                        key={mode}
+                        onClick={() => setViewMode(mode)}
+                        data-cursor="button"
+                        style={{
+                          padding: '8px 26px',
+                          borderRadius: 'var(--radius-pill)',
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: 'var(--text-meta)',
+                          fontWeight: 600,
+                          letterSpacing: 'var(--tracking-wider)',
+                          textTransform: 'uppercase',
+                          color: isActive ? '#FFFFFF' : 'var(--color-text-secondary)',
+                          background: isActive
+                            ? (mode === 'optimized' ? 'var(--color-accent)' : '#0F172A')
+                            : 'transparent',
+                          boxShadow: isActive ? '0 2px 10px rgba(15, 23, 42, 0.15)' : 'none',
+                          transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                          position: 'relative',
+                        }}
+                      >
+                        {mode}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

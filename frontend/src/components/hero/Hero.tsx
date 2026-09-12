@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import NetworkGraph from '../network/NetworkGraph';
+import { NetworkLegendCard } from '../network/NetworkLegend';
 import MagneticButton from '../common/MagneticButton';
 
 interface Props {
@@ -9,56 +10,81 @@ interface Props {
 }
 
 const Hero: React.FC<Props> = ({ onRunSimulation, isLoading }) => {
+  // Select node (2,4) by default to match the reference design, or allow user interaction
+  const [selectedNode, setSelectedNode] = useState<[number, number] | null>([2, 4]);
+
   return (
     <section
       id="hero"
       style={{
         minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        padding: 'calc(var(--space-24) + 16px) var(--space-6) var(--space-16)',
         position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        paddingTop: 'calc(var(--space-20) + 24px)',
+        paddingBottom: 'var(--space-12)',
         overflow: 'hidden',
       }}
     >
-      <div className="container" style={{ width: '100%', position: 'relative', zIndex: 2 }}>
-        <div className="hero-grid">
-          {/* Left Column: Text & CTAs */}
-          <div className="hero-left-col">
-            {/* Technical metadata badge with live radar ping */}
+      {/* RIGHT-SIDE CITY MAP: Organically blended into page grid with multi-directional feathering */}
+      <div
+        style={{
+          position: 'absolute',
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: '62vw',
+          maxWidth: '1050px',
+          backgroundImage: 'url(/images/city_transit_map.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'right 30%',
+          opacity: 0.52,
+          mixBlendMode: 'multiply',
+          maskImage:
+            'radial-gradient(ellipse 75% 52% at 75% 36%, #000000 12%, rgba(0, 0, 0, 0.72) 34%, rgba(0, 0, 0, 0.22) 56%, rgba(0, 0, 0, 0.03) 72%, transparent 84%)',
+          WebkitMaskImage:
+            'radial-gradient(ellipse 75% 52% at 75% 36%, #000000 12%, rgba(0, 0, 0, 0.72) 34%, rgba(0, 0, 0, 0.22) 56%, rgba(0, 0, 0, 0.03) 72%, transparent 84%)',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+
+      <div className="container" style={{ position: 'relative', zIndex: 1, width: '100%' }}>
+        <div className="hero-editorial-layout">
+          {/* ================= LEFT COLUMN: EDITORIAL ================= */}
+          <div className="hero-left-content">
+            {/* Top Pill Badge */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
               style={{
-                marginBottom: 'var(--space-6)',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '10px',
-                padding: '6px 14px',
-                background: 'rgba(59, 130, 246, 0.12)',
-                border: '1px solid rgba(96, 165, 250, 0.3)',
-                borderRadius: 'var(--radius-pill)',
-                boxShadow: '0 0 20px rgba(59, 130, 246, 0.15)',
+                gap: '8px',
+                padding: '6px 16px',
+                borderRadius: '9999px',
+                background: 'rgba(22, 119, 255, 0.08)',
+                border: '1px solid rgba(22, 119, 255, 0.22)',
+                marginBottom: 'var(--space-6)',
               }}
             >
               <span
                 style={{
-                  width: 7,
-                  height: 7,
+                  width: 6,
+                  height: 6,
                   borderRadius: '50%',
-                  backgroundColor: 'var(--color-accent-bright)',
-                  boxShadow: '0 0 10px var(--color-accent)',
-                  animation: 'pulse-dot 2s ease-in-out infinite',
+                  backgroundColor: '#1677FF',
                 }}
               />
               <span
                 style={{
                   fontFamily: 'var(--font-mono)',
-                  fontSize: '0.6875rem',
+                  fontSize: '11px',
                   fontWeight: 600,
-                  letterSpacing: '0.14em',
-                  color: 'var(--color-accent-bright)',
+                  letterSpacing: '0.12em',
+                  color: '#1677FF',
                   textTransform: 'uppercase',
                 }}
               >
@@ -66,83 +92,77 @@ const Hero: React.FC<Props> = ({ onRunSimulation, isLoading }) => {
               </span>
             </motion.div>
 
-            {/* High-contrast Editorial Headline */}
+            {/* Editorial Headline */}
             <motion.h1
-              initial={{ opacity: 0, y: 28 }}
+              initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.7, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
               className="hero-title"
               style={{
                 marginBottom: 'var(--space-6)',
                 textWrap: 'balance',
+                color: '#0F172A',
               }}
             >
-              <span>When the network</span>{' '}
-              <span style={{ color: 'var(--color-danger)' }}>breaks</span>,
+              When the
               <br />
-              <span style={{ color: 'var(--color-accent-bright)' }}>flow</span>{' '}
-              <span>adapts.</span>
+              network <span style={{ color: '#EF3340' }}>breaks,</span>
+              <br />
+              <span style={{ color: '#1677FF' }}>flow</span> adapts.
             </motion.h1>
 
-            {/* Balanced Body Description */}
+            {/* Supporting Description */}
             <motion.p
-              initial={{ opacity: 0, y: 18 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
+              transition={{ duration: 0.6, delay: 0.45 }}
               className="hero-subtitle"
               style={{
                 marginBottom: 'var(--space-8)',
-                color: 'var(--color-text-secondary)',
-                fontSize: 'clamp(1.05rem, 1.4vw, 1.2rem)',
-                lineHeight: 1.65,
               }}
             >
               Simulating congestion-aware rerouting across a disrupted transit grid.
               120 trips. One broken edge. System-wide optimization.
             </motion.p>
 
-            {/* Physical Instrument CTAs */}
+            {/* CTA Buttons */}
             <motion.div
-              initial={{ opacity: 0, y: 18 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.65 }}
-              className="hero-ctas"
+              transition={{ duration: 0.6, delay: 0.6 }}
               style={{
                 display: 'flex',
                 gap: 'var(--space-4)',
-                flexWrap: 'wrap',
                 alignItems: 'center',
+                flexWrap: 'wrap',
+                marginBottom: 'var(--space-12)',
               }}
             >
               <MagneticButton
                 onClick={onRunSimulation}
                 disabled={isLoading}
-                className="btn-instrument btn-instrument-primary"
-                style={{
-                  padding: '0 var(--space-8)',
-                  height: '48px',
-                  borderRadius: 'var(--radius-pill)',
-                  boxShadow: '0 0 24px rgba(59, 130, 246, 0.4)',
-                }}
+                className="btn-primary-pill"
               >
                 {isLoading ? (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <motion.span
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
+                      transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
                       style={{
-                        width: 14,
-                        height: 14,
+                        width: 13,
+                        height: 13,
                         border: '2px solid rgba(255, 255, 255, 0.4)',
-                        borderTopColor: '#ffffff',
+                        borderTopColor: '#FFFFFF',
                         borderRadius: '50%',
                         display: 'inline-block',
                       }}
                     />
-                    <span>OPTIMIZING FLOWS</span>
+                    <span>OPTIMIZING</span>
                   </span>
                 ) : (
-                  'RUN SIMULATION'
+                  <>
+                    RUN SIMULATION <span style={{ marginLeft: 6, fontSize: '14px' }}>→</span>
+                  </>
                 )}
               </MagneticButton>
 
@@ -151,210 +171,193 @@ const Hero: React.FC<Props> = ({ onRunSimulation, isLoading }) => {
                   const el = document.getElementById('network');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="btn-instrument"
-                style={{
-                  padding: '0 var(--space-8)',
-                  height: '48px',
-                  borderRadius: 'var(--radius-pill)',
-                }}
+                className="btn-secondary-pill"
               >
                 EXPLORE NETWORK
               </MagneticButton>
             </motion.div>
 
-            {/* System Telemetry Specs strip */}
+            {/* Technical Metadata Strip with thin vertical rules */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.9 }}
-              style={{
-                display: 'flex',
-                gap: 'var(--space-6)',
-                marginTop: 'var(--space-10)',
-                paddingTop: 'var(--space-6)',
-                borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-                flexWrap: 'wrap',
-              }}
+              transition={{ delay: 0.75 }}
+              className="hero-metadata-strip"
             >
-              <div>
-                <span className="label" style={{ display: 'block', fontSize: '0.625rem' }}>GRID SIZE</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.875rem', color: 'var(--color-text-primary)' }}>5 × 5</span>
+              <div className="meta-col">
+                <span className="meta-label">GRID SIZE</span>
+                <span className="meta-value">5 × 5</span>
               </div>
-              <div>
-                <span className="label" style={{ display: 'block', fontSize: '0.625rem' }}>NODES / EDGES</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.875rem', color: 'var(--color-text-primary)' }}>25 / 40</span>
+              <div className="meta-col">
+                <span className="meta-label">NODES / EDGES</span>
+                <span className="meta-value">25 / 40</span>
               </div>
-              <div>
-                <span className="label" style={{ display: 'block', fontSize: '0.625rem' }}>TOTAL TRIPS</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.875rem', color: 'var(--color-accent-bright)' }}>120 DEMAND</span>
+              <div className="meta-col">
+                <span className="meta-label">TOTAL TRIPS</span>
+                <span className="meta-value" style={{ color: '#1677FF' }}>120</span>
+              </div>
+              <div className="meta-col meta-col-last">
+                <span className="meta-label">DISRUPTION</span>
+                <span className="meta-value" style={{ color: '#EF3340' }}>(2,2) ↔ (3,2)</span>
               </div>
             </motion.div>
           </div>
 
-          {/* Right Column: Interactive Animated Network Graph */}
+          {/* ================= RIGHT COLUMN: 5x5 NETWORK & CITY MAP ================= */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.94 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              position: 'relative',
-            }}
+            transition={{ duration: 0.9, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="hero-network-container"
           >
+            {/* Floating Top Badge: 120 ACTIVE TRIPS */}
             <div
               style={{
-                position: 'relative',
-                width: 'min(92vw, 480px)',
-                height: 'min(92vw, 480px)',
+                position: 'absolute',
+                top: '-16px',
+                left: '42%',
+                transform: 'translateX(-50%)',
+                zIndex: 10,
+                background: '#FFFFFF',
+                border: '1px solid #E2E8F0',
+                padding: '6px 14px',
+                borderRadius: '9999px',
+                boxShadow: '0 4px 14px rgba(15, 23, 42, 0.06)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                whiteSpace: 'nowrap',
               }}
             >
-              {/* Pulsing Luminous Backglow */}
-              <div
+              <span
                 style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  width: '125%',
-                  height: '125%',
-                  background: 'radial-gradient(circle, rgba(59, 130, 246, 0.22) 0%, rgba(99, 102, 241, 0.08) 50%, transparent 72%)',
-                  pointerEvents: 'none',
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  backgroundColor: '#1677FF',
                 }}
               />
-
-              {/* Floating Animated HUD Badge: Top-Right */}
-              <motion.div
-                animate={{ y: [0, -6, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+              <span
                 style={{
-                  position: 'absolute',
-                  top: -12,
-                  right: -8,
-                  zIndex: 10,
-                  background: 'rgba(10, 14, 26, 0.85)',
-                  border: '1px solid rgba(59, 130, 246, 0.35)',
-                  backdropFilter: 'blur(12px)',
-                  padding: '4px 10px',
-                  borderRadius: 'var(--radius-pill)',
                   fontFamily: 'var(--font-mono)',
-                  fontSize: '0.625rem',
-                  letterSpacing: '0.08em',
-                  color: 'var(--color-accent-bright)',
-                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.6)',
-                  pointerEvents: 'none',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  letterSpacing: '0.1em',
+                  color: '#0F172A',
                 }}
               >
-                ● 120 ACTIVE TRIPS
-              </motion.div>
+                120 ACTIVE TRIPS
+              </span>
+            </div>
 
-              {/* Floating Animated HUD Badge: Bottom-Left */}
-              <motion.div
-                animate={{ y: [0, 6, 0] }}
-                transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-                style={{
-                  position: 'absolute',
-                  bottom: -12,
-                  left: -8,
-                  zIndex: 10,
-                  background: 'rgba(26, 12, 14, 0.85)',
-                  border: '1px solid rgba(239, 68, 68, 0.4)',
-                  backdropFilter: 'blur(12px)',
-                  padding: '4px 10px',
-                  borderRadius: 'var(--radius-pill)',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.625rem',
-                  letterSpacing: '0.08em',
-                  color: '#f87171',
-                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.6)',
-                  pointerEvents: 'none',
-                }}
-              >
-                ⚠ DISRUPTED: (2,2) ↔ (3,2)
-              </motion.div>
-
+            {/* 5x5 Network SVG Graph */}
+            <div className="network-svg-wrapper">
               <NetworkGraph
-                width={480}
-                height={480}
+                width={460}
+                height={460}
                 showParticles={true}
                 showDisruption={true}
                 interactive={true}
+                selectedNode={selectedNode}
+                onSelectNode={setSelectedNode}
                 style={{ width: '100%', height: '100%' }}
               />
+            </div>
+
+            {/* Floating Legend Card (matches reference) */}
+            <div className="hero-legend-wrapper">
+              <NetworkLegendCard />
             </div>
           </motion.div>
         </div>
       </div>
 
-      {/* Subtle Hardware Scroll Cue */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-        style={{
-          position: 'absolute',
-          bottom: 'var(--space-6)',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 'var(--space-2)',
-          zIndex: 2,
-        }}
-      >
-        <span
-          className="label"
-          style={{ fontSize: '0.625rem', letterSpacing: '0.18em', opacity: 0.7 }}
-        >
-          SCROLL TO EXPLORE
-        </span>
-        <motion.div
-          animate={{ y: [0, 5, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-          style={{
-            width: 1,
-            height: 20,
-            background: 'linear-gradient(180deg, var(--color-accent-bright) 0%, transparent 100%)',
-          }}
-        />
-      </motion.div>
-
-      {/* Responsive Grid CSS */}
+      {/* Embedded CSS for responsive Hero composition */}
       <style>{`
-        .hero-grid {
+        .hero-editorial-layout {
           display: grid;
           grid-template-columns: 1fr;
-          gap: var(--space-10);
+          gap: var(--space-12);
           align-items: center;
+          margin-top: var(--space-4);
         }
-        .hero-left-col {
-          text-align: center;
-          margin: 0 auto;
-          max-width: 860px;
+
+        .hero-left-content {
+          max-width: 580px;
         }
-        .hero-ctas {
+
+        .hero-metadata-strip {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          padding-top: var(--space-6);
+          border-top: 1px solid #E2E8F0;
+          flex-wrap: wrap;
+        }
+
+        .meta-col {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          padding-right: 20px;
+          border-right: 1px solid #E2E8F0;
+        }
+
+        .meta-col-last {
+          border-right: none !important;
+          padding-right: 0 !important;
+        }
+
+        .meta-label {
+          font-family: var(--font-mono);
+          font-size: 11px;
+          font-weight: 500;
+          letter-spacing: 0.1em;
+          color: #64748B;
+          text-transform: uppercase;
+        }
+
+        .meta-value {
+          font-family: var(--font-sans);
+          font-size: 19px;
+          font-weight: 800;
+          color: #0F172A;
+          line-height: 1.1;
+        }
+
+        .hero-network-container {
+          position: relative;
+          display: flex;
+          align-items: center;
           justify-content: center;
+          gap: 24px;
         }
+
+        .network-svg-wrapper {
+          position: relative;
+          width: min(85vw, 460px);
+          height: min(85vw, 460px);
+        }
+
+        .hero-legend-wrapper {
+          position: static;
+        }
+
         @media (min-width: 1024px) {
-          .hero-grid {
-            grid-template-columns: minmax(0, 1.18fr) minmax(0, 1fr) !important;
-            gap: var(--space-14) !important;
-            text-align: left !important;
+          .hero-editorial-layout {
+            grid-template-columns: 1fr 1fr !important;
+            gap: var(--space-8) !important;
           }
-          .hero-left-col {
-            text-align: left !important;
-            margin: 0 !important;
-            max-width: 660px !important;
-          }
-          .hero-ctas {
+          .hero-network-container {
             justify-content: flex-start !important;
+            padding-left: var(--space-4);
           }
         }
-        @keyframes pulse-dot {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.35; transform: scale(0.8); }
+
+        @media (max-width: 768px) {
+          .hero-network-container {
+            flex-direction: column;
+          }
         }
       `}</style>
     </section>

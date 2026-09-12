@@ -1,72 +1,74 @@
 @import '@fontsource-variable/geist';
-@import '@fontsource-variable/jetbrains-mono';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource/ibm-plex-mono/600.css';
 
 /* ============================================================
    DESIGN SYSTEM — FlowRoute AI
-   Visual Redesign: Editorial Typography + Hardware Navigation + Minimal Cursor
+   Visual Redesign: Light Editorial Swiss Transportation Aesthetic
    ============================================================ */
 
 :root {
-  /* ---- Color Palette (Premium Linear / Vercel Midnight & Electric Cyan) ---- */
-  --color-bg:            #080a10;
-  --color-bg-elevated:   #0e121e;
-  --color-bg-surface:    #151b2c;
-  --color-bg-hover:      #1f273d;
-  --color-border:        rgba(255, 255, 255, 0.09);
-  --color-border-subtle: rgba(255, 255, 255, 0.05);
-  --color-border-bright: rgba(255, 255, 255, 0.18);
+  /* ---- Color Palette (Light Editorial Swiss Transit Direction) ---- */
+  --color-bg:            #F7F9FC; /* Very light cool off-white foundation */
+  --color-bg-elevated:   #FFFFFF; /* Pure crisp white for cards & floating bars */
+  --color-bg-surface:    #EDF2F7; /* Light neutral tone */
+  --color-bg-hover:      #E2E8F0; /* Clean interactive hover */
+  --color-border:        #E2E8F0; /* Subtle slate border */
+  --color-border-subtle: rgba(22, 119, 255, 0.09);
+  --color-border-bright: #CBD5E1;
 
-  --color-text-primary:   #f8fafc;
-  --color-text-secondary: #94a3b8;
-  --color-text-muted:     #64748b;
+  --color-text-primary:   #0F172A; /* Deep navy / charcoal near-black */
+  --color-text-secondary: #475569; /* Slate secondary */
+  --color-text-muted:     #94A3B8; /* Muted metadata */
 
   /* Signal colors */
-  --color-accent:         #2563eb;
-  --color-accent-bright:  #38bdf8;
-  --color-accent-dim:     #1d4ed8;
-  --color-accent-glow:    rgba(56, 189, 248, 0.18);
+  --color-accent:         #1677FF; /* Vibrant transportation blue */
+  --color-accent-bright:  #1D78F2;
+  --color-accent-dim:     #0958D9;
+  --color-accent-glow:    rgba(22, 119, 255, 0.15);
 
-  --color-healthy:        #10b981;
+  --color-healthy:        #10B981;
   --color-healthy-dim:    #059669;
-  --color-healthy-glow:   rgba(16, 185, 129, 0.14);
+  --color-healthy-glow:   rgba(16, 185, 129, 0.12);
 
-  --color-warning:        #f59e0b;
-  --color-warning-dim:    #d97706;
+  --color-warning:        #F59E0B;
+  --color-warning-dim:    #D97706;
 
-  --color-danger:         #f43f5e;
-  --color-danger-dim:     #be123c;
-  --color-danger-glow:    rgba(244, 63, 94, 0.18);
+  --color-danger:         #EF3340; /* Specific disruption red */
+  --color-danger-dim:     #CF1322;
+  --color-danger-glow:    rgba(239, 51, 64, 0.14);
 
-  --color-disrupted:      #f43f5e;
-  --color-congested:      #f59e0b;
-  --color-optimized:      #38bdf8;
+  --color-disrupted:      #EF3340;
+  --color-congested:      #F59E0B;
+  --color-optimized:      #1677FF;
 
-  /* ---- Typography (High-Contrast Editorial + Precision Monospace) ---- */
+  /* ---- Typography (Satoshi / Geist + IBM Plex Mono) ---- */
   --font-sans: 'Satoshi', 'Geist Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', 'SF Mono', monospace;
+  --font-mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
 
-  /* Clamp-based typography */
-  --text-display:    clamp(2.75rem, 6.2vw + 0.5rem, 5.5rem);
-  --text-h1:         clamp(2rem, 3.8vw + 0.2rem, 3.25rem);
-  --text-h2:         clamp(1.5rem, 2.5vw + 0.15rem, 2.25rem);
-  --text-h3:         clamp(1.125rem, 1.8vw, 1.5rem);
+  /* Responsive clamp-based typography */
+  --text-display:    clamp(3.25rem, 6.5vw, 5.75rem);
+  --text-h1:         clamp(2.25rem, 4vw, 3.5rem);
+  --text-h2:         clamp(1.65rem, 2.8vw, 2.5rem);
+  --text-h3:         clamp(1.15rem, 1.8vw, 1.5rem);
   --text-body:       1rem;
   --text-small:      0.875rem;
   --text-xs:         0.75rem;
   --text-meta:       0.6875rem;
 
   --leading-none:    1.0;
-  --leading-tight:   1.08;
-  --leading-snug:    1.25;
+  --leading-tight:   1.04;
+  --leading-snug:    1.22;
   --leading-normal:  1.6;
-  --leading-relaxed: 1.75;
+  --leading-relaxed: 1.7;
 
   --tracking-tighter: -0.04em;
   --tracking-tight:   -0.025em;
   --tracking-normal:  -0.005em;
-  --tracking-wide:    0.05em;
+  --tracking-wide:    0.06em;
   --tracking-wider:   0.12em;
-  --tracking-widest:  0.2em;
+  --tracking-widest:  0.18em;
 
   /* ---- Spacing ---- */
   --space-1:   0.25rem;
@@ -86,9 +88,9 @@
 
   /* ---- Layout ---- */
   --max-width: 1440px;
-  --section-padding: clamp(4.5rem, 11vh, 8.5rem);
+  --section-padding: clamp(5rem, 12vh, 9rem);
 
-  /* ---- Radius (Restrained physical hardware aesthetic) ---- */
+  /* ---- Radius ---- */
   --radius-xs:  3px;
   --radius-sm:  6px;
   --radius-md:  8px;
@@ -97,24 +99,21 @@
   --radius-2xl: 20px;
   --radius-pill: 9999px;
 
-  /* ---- Shadows & Hardware Bevels ---- */
-  --shadow-sm:   0 1px 2px rgba(0,0,0,0.4);
-  --shadow-md:   0 4px 14px rgba(0,0,0,0.5);
-  --shadow-lg:   0 8px 32px rgba(0,0,0,0.6);
-  --shadow-hardware: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.55);
-  --shadow-glow-accent: 0 0 32px rgba(59, 130, 246, 0.18);
-  --shadow-glow-danger: 0 0 30px rgba(239, 68, 68, 0.18);
+  /* ---- Shadows & Lighting ---- */
+  --shadow-sm:   0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md:   0 4px 14px rgba(15, 23, 42, 0.06);
+  --shadow-lg:   0 10px 30px rgba(15, 23, 42, 0.08);
+  --shadow-floating: 0 8px 28px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --shadow-pill-active: 0 4px 14px rgba(22, 119, 255, 0.32);
 
   /* ---- Transitions ---- */
   --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-smooth:  cubic-bezier(0.4, 0, 0.2, 1);
 
-  --duration-micro: 120ms;
-  --duration-fast:  220ms;
-  --duration-base:  380ms;
-  --duration-slow:  700ms;
-  --duration-cinematic: 1200ms;
+  --duration-fast: 200ms;
+  --duration-base: 350ms;
+  --duration-slow: 600ms;
 
   /* ---- Z-index ---- */
   --z-base:    1;
@@ -156,8 +155,9 @@ body {
   color: var(--color-text-primary);
   background-color: var(--color-bg);
   background-image:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(56, 189, 248, 0.07), transparent 70%),
-    radial-gradient(ellipse 60% 40% at 50% 110%, rgba(37, 99, 235, 0.05), transparent 70%);
+    linear-gradient(rgba(22, 119, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22, 119, 255, 0.035) 1px, transparent 1px);
+  background-size: 64px 64px;
   background-attachment: fixed;
   overflow-x: hidden;
   min-height: 100vh;
@@ -186,7 +186,7 @@ ul, ol {
 }
 
 /* ============================================================
-   EDITORIAL TYPOGRAPHY UTILITIES
+   EDITORIAL UTILITY CLASSES
    ============================================================ */
 
 .container {
@@ -222,7 +222,7 @@ ul, ol {
   font-weight: 500;
   letter-spacing: var(--tracking-widest);
   text-transform: uppercase;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 .section {
@@ -243,53 +243,80 @@ ul, ol {
 
 .hero-subtitle {
   font-family: var(--font-sans);
-  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+  font-size: clamp(1.05rem, 1.4vw, 1.2rem);
   line-height: var(--leading-relaxed);
   color: var(--color-text-secondary);
-  max-width: 60ch;
+  max-width: 540px;
 }
 
-/* Physical Instrument Button Style */
-.btn-instrument {
-  position: relative;
+/* Physical CTA Button Styles */
+.btn-primary-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  height: 44px;
-  padding: 0 var(--space-6);
-  border-radius: var(--radius-sm);
+  height: 48px;
+  padding: 0 28px;
+  border-radius: var(--radius-pill);
   font-family: var(--font-mono);
   font-size: var(--text-small);
   font-weight: 600;
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  border: 1px solid var(--color-border-bright);
-  background: var(--color-bg-surface);
-  color: var(--color-text-primary);
-  box-shadow: var(--shadow-hardware);
-  transition: background var(--duration-fast) var(--ease-out),
-              border-color var(--duration-fast) var(--ease-out),
-              box-shadow var(--duration-fast) var(--ease-out),
-              color var(--duration-fast) var(--ease-out);
-}
-
-.btn-instrument:hover {
-  background: var(--color-bg-hover);
-  border-color: rgba(255, 255, 255, 0.28);
-}
-
-.btn-instrument-primary {
   background: var(--color-accent);
-  border-color: var(--color-accent-bright);
-  color: #ffffff;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 4px 20px var(--color-accent-glow);
+  color: #FFFFFF;
+  border: 1px solid var(--color-accent);
+  box-shadow: var(--shadow-pill-active);
+  transition: all var(--duration-fast) var(--ease-out);
 }
 
-.btn-instrument-primary:hover {
-  background: #2563eb;
-  border-color: #93c5fd;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 6px 28px rgba(59, 130, 246, 0.3);
+.btn-primary-pill:hover {
+  background: var(--color-accent-dim);
+  border-color: var(--color-accent-dim);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(22, 119, 255, 0.4);
+}
+
+.btn-secondary-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 48px;
+  padding: 0 28px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  background: #FFFFFF;
+  color: var(--color-text-primary);
+  border: 1px solid #CBD5E1;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.btn-secondary-pill:hover {
+  background: #F8FAFC;
+  border-color: #94A3B8;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Floating Card Base */
+.card-floating {
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-floating);
+  transition: box-shadow var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out);
+}
+
+.card-floating:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.09);
 }
 
 /* ============================================================
@@ -297,7 +324,7 @@ ul, ol {
    ============================================================ */
 
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -305,12 +332,12 @@ ul, ol {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: var(--radius-xs);
+  background: #CBD5E1;
+  border-radius: var(--radius-pill);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
+  background: #94A3B8;
 }
 
 /* ============================================================
@@ -318,7 +345,7 @@ ul, ol {
    ============================================================ */
 
 :focus-visible {
-  outline: 2px solid var(--color-accent-bright);
+  outline: 2px solid var(--color-accent);
   outline-offset: 3px;
 }
 
@@ -327,13 +354,9 @@ ul, ol {
    ============================================================ */
 
 ::selection {
-  background: rgba(59, 130, 246, 0.3);
+  background: rgba(22, 119, 255, 0.18);
   color: var(--color-text-primary);
 }
-
-/* ============================================================
-   ROOT
-   ============================================================ */
 
 #root {
   min-height: 100vh;
