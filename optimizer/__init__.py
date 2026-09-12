@@ -7,6 +7,7 @@ from .metrics import (
     calculate_trip_travel_times,
     calculate_metrics
 )
+from .optimizer import solve_optimized
 def build_instance(seed: int = 20260911) -> dict:
     """Builds the complete deterministic simulation instance."""
     return {
