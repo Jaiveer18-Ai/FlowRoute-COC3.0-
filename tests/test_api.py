@@ -251,3 +251,69 @@ def test_cors_preflight_headers(client):
     )
     assert response.status_code == 200
     assert response.headers.get("access-control-allow-origin") == "http://localhost:5173"
+
+
+def test_endpoints_with_instance_payload(client):
+    """Verify baseline, optimize, and compare endpoints accept and solve a real instance."""
+    inst_resp = client.post("/api/instance", json={"seed": 42})
+    assert inst_resp.status_code == 200
+    instance = inst_resp.json()
+
+    # 1. Baseline with instance
+    resp_base = client.post("/api/baseline", json={"instance": instance})
+    assert resp_base.status_code == 200
+    assert len(resp_base.json()["baseline"]["routes"]) == TOTAL_TRIPS
+
+    # 2. Optimize with instance
+    resp_opt = client.post("/api/optimize", json={"instance": instance})
+    assert resp_opt.status_code == 200
+    assert len(resp_opt.json()["optimized"]["routes"]) == TOTAL_TRIPS
+
+    # 3. Compare with instance
+    resp_comp = client.post("/api/compare", json={"instance": instance})
+    assert resp_comp.status_code == 200
+    assert len(resp_comp.json()["baseline"]["routes"]) == TOTAL_TRIPS
+    assert len(resp_comp.json()["optimized"]["routes"]) == TOTAL_TRIPS
+
+    # 4. Raw top-level instance dictionary
+    resp_raw = client.post("/api/baseline", json=instance)
+    assert resp_raw.status_code == 200
+    assert len(resp_raw.json()["baseline"]["routes"]) == TOTAL_TRIPS
+
+
+def test_determinism_across_endpoints(client):
+    """Verify deterministic output for repeated requests with seed 20260911."""
+    seed = 20260911
+    # Instance
+    inst_a = client.post("/api/instance", json={"seed": seed}).json()
+    inst_b = client.post("/api/instance", json={"seed": seed}).json()
+    assert inst_a == inst_b
+
+    # Compare
+    comp_a = client.post("/api/compare", json={"seed": seed}).json()
+    comp_b = client.post("/api/compare", json={"seed": seed}).json()
+    assert comp_a == comp_b
+
+
+def test_invalid_instance_payload_rejection(client):
+    """Verify invalid instance payloads (missing required fields) return 400."""
+    resp = client.post("/api/baseline", json={"instance": {"nodes": []}})
+    assert resp.status_code == 400
+    assert "detail" in resp.json()
+
+
+def test_optimizer_exception_structured_error(client):
+    """Verify internal optimizer exceptions return clean structured 500 JSON without traceback."""
+    from backend.app.services import simulation_service
+    with patch.object(simulation_service, "run_baseline", side_effect=RuntimeError("Solver timeout")):
+        resp = client.post("/api/baseline", json={"seed": 42})
+        assert resp.status_code == 500
+        assert "detail" in resp.json()
+        assert "Baseline simulation failed" in resp.json()["detail"]
+
+
+def test_malformed_json_structured_error(client):
+    """Verify malformed JSON requests return clean 422 structured detail."""
+    resp = client.post("/api/instance", content=b"{bad-json", headers={"Content-Type": "application/json"})
+    assert resp.status_code == 422
+    assert "detail" in resp.json()

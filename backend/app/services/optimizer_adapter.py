@@ -66,6 +66,22 @@ def _build_reference_grid_graph() -> nx.Graph:
     return G
 
 
+def _build_graph_from_instance(instance: dict) -> nx.Graph:
+    """Build NetworkX graph from instance definitions, removing disrupted edges."""
+    if "edges" in instance and instance["edges"]:
+        G = nx.Graph()
+        if "nodes" in instance and instance["nodes"]:
+            for node in instance["nodes"]:
+                G.add_node(tuple(node["id"]))
+        for edge in instance["edges"]:
+            if not edge.get("disrupted", False):
+                u = tuple(edge.get("from", edge.get("from_")))
+                v = tuple(edge["to"])
+                G.add_edge(u, v)
+        return G
+    return _build_reference_grid_graph()
+
+
 def _reference_build_instance(seed: int = 42) -> dict:
     """Build deterministic instance strictly conforming to Contract.md Sections 4-6."""
     nodes = [{"id": [x, y], "x": x, "y": y} for x in range(GRID_SIZE) for y in range(GRID_SIZE)]
@@ -151,7 +167,7 @@ def _compute_flows_and_travel_times(
 
 def _reference_solve_baseline(instance: dict) -> dict:
     """Solve baseline shortest paths avoiding disrupted edge."""
-    G = _build_reference_grid_graph()
+    G = _build_graph_from_instance(instance)
     raw_routes = []
     for trip in instance["trips"]:
         orig = tuple(trip["origin"])
@@ -174,7 +190,7 @@ def _reference_solve_baseline(instance: dict) -> dict:
 
 def _reference_solve_optimized(instance: dict) -> dict:
     """Congestion-aware incremental loading solver as described in Contract Section 14."""
-    G = _build_reference_grid_graph()
+    G = _build_graph_from_instance(instance)
     for u, v in G.edges():
         G[u][v]["weight"] = FREE_FLOW_TIME
         G[u][v]["flow"] = 0

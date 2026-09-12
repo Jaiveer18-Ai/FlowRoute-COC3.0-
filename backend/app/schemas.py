@@ -1,6 +1,6 @@
 """Pydantic schemas strictly conforming to Contract.md."""
 
-from typing import Dict, List
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -59,15 +59,21 @@ class InstanceRequest(BaseModel):
 
 
 class BaselineRequest(BaseModel):
-    seed: int = 42
+    model_config = ConfigDict(extra="allow")
+    seed: Optional[int] = 42
+    instance: Optional[Dict[str, Any]] = None
 
 
 class OptimizeRequest(BaseModel):
-    seed: int = 42
+    model_config = ConfigDict(extra="allow")
+    seed: Optional[int] = 42
+    instance: Optional[Dict[str, Any]] = None
 
 
 class CompareRequest(BaseModel):
-    seed: int = 42
+    model_config = ConfigDict(extra="allow")
+    seed: Optional[int] = 42
+    instance: Optional[Dict[str, Any]] = None
 
 
 # Response Models

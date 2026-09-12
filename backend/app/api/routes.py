@@ -1,5 +1,4 @@
-"""API Route definitions strictly adhering to Contract.md Sections 15-20."""
-
+from typing import Any, Dict, Optional, Tuple
 from fastapi import APIRouter, HTTPException, status
 
 from backend.app.schemas import (
@@ -17,6 +16,25 @@ from backend.app.schemas import (
 from backend.app.services.simulation_service import SimulationService
 
 router = APIRouter()
+
+
+def _extract_instance_and_seed(request_obj: Any) -> Tuple[Optional[Dict[str, Any]], int]:
+    """Extract optional instance dict and integer seed from request."""
+    if hasattr(request_obj, "instance") and request_obj.instance:
+        inst = request_obj.instance
+        seed = inst.get("seed", getattr(request_obj, "seed", 42) or 42)
+        return inst, seed
+
+    extra = getattr(request_obj, "__pydantic_extra__", None) or {}
+    if "trips" in extra and "nodes" in extra:
+        inst = dict(extra)
+        seed_val = getattr(request_obj, "seed", 42)
+        if seed_val is not None:
+            inst["seed"] = seed_val
+        return inst, inst.get("seed", 42)
+
+    seed_val = getattr(request_obj, "seed", 42)
+    return None, 42 if seed_val is None else seed_val
 
 
 @router.get(
@@ -70,12 +88,18 @@ async def solve_baseline_endpoint(
     request: BaselineRequest = BaselineRequest(),
 ) -> BaselineResponse:
     """Compute baseline shortest path routing and congestion metrics (Contract.md Section 17)."""
-    if request.seed < 0:
+    if request.seed is not None and request.seed < 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Seed must be a non-negative integer.",
         )
-    result = SimulationService.execute_baseline(seed=request.seed)
+    inst, seed = _extract_instance_and_seed(request)
+    if inst is not None and ("trips" not in inst or "nodes" not in inst):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Provided instance is invalid: must contain 'nodes' and 'trips'.",
+        )
+    result = SimulationService.execute_baseline(seed=seed, instance=inst)
     return BaselineResponse(baseline=result)
 
 
@@ -94,12 +118,18 @@ async def solve_optimize_endpoint(
     request: OptimizeRequest = OptimizeRequest(),
 ) -> OptimizeResponse:
     """Compute congestion-aware optimized routing and metrics (Contract.md Section 18)."""
-    if request.seed < 0:
+    if request.seed is not None and request.seed < 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Seed must be a non-negative integer.",
         )
-    result = SimulationService.execute_optimized(seed=request.seed)
+    inst, seed = _extract_instance_and_seed(request)
+    if inst is not None and ("trips" not in inst or "nodes" not in inst):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Provided instance is invalid: must contain 'nodes' and 'trips'.",
+        )
+    result = SimulationService.execute_optimized(seed=seed, instance=inst)
     return OptimizeResponse(optimized=result)
 
 
@@ -118,10 +148,16 @@ async def compare_endpoint(
     request: CompareRequest = CompareRequest(),
 ) -> CompareResponse:
     """Primary frontend endpoint comparing baseline and optimized runs (Contract.md Section 19)."""
-    if request.seed < 0:
+    if request.seed is not None and request.seed < 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Seed must be a non-negative integer.",
         )
-    result = SimulationService.execute_compare(seed=request.seed)
+    inst, seed = _extract_instance_and_seed(request)
+    if inst is not None and ("trips" not in inst or "nodes" not in inst):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Provided instance is invalid: must contain 'nodes' and 'trips'.",
+        )
+    result = SimulationService.execute_compare(seed=seed, instance=inst)
     return CompareResponse(**result)
